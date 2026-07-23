@@ -1,0 +1,9 @@
+{% load static %}
+{% comment %}
+Stylesheets for the shared body editor (blog + news add/edit). Load order
+matters: CodeMirror base first, then EasyMDE (self-contained, overrides base for
+the Markdown editor), then our theme last. Included from each form's extra_head.
+{% endcomment %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+<link rel="stylesheet" href="{% static 'keel_web_admin/css/content-editor.css' %}">

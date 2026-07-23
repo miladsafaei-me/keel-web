@@ -1,0 +1,75 @@
+{% load keel_icons %}
+{% comment %}
+TailAdmin-styled dropdown. Two behaviors:
+
+* Navigation — each option has an ``href``; click navigates the page.
+* Filter      — each option has an ``event_value``; click dispatches a
+                ``signals:filter-change`` CustomEvent at document level
+                with ``{detail: {key: dd_filter_key, value: event_value}}``
+                and updates the trigger label client-side.
+
+Inputs:
+  dd_eyebrow         optional grey prefix shown on the trigger (e.g. "Pair")
+  dd_selected_label  current label rendered on the trigger
+  dd_align           tailwind class for the menu edge ("left-0" / "right-0")
+  dd_filter_key      if set, options behave as filters; emits this key
+  dd_options         list of dicts: {label, is_active, href?, event_value?}
+{% endcomment %}
+<div x-data="{ open: false, label: '{{ dd_selected_label|escapejs }}' }"
+     @keydown.escape.window="open = false"
+     class="relative inline-block">
+  <button type="button"
+          @click="open = !open"
+          aria-haspopup="listbox"
+          :aria-expanded="open"
+          class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-theme-xs transition hover:border-gray-300 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-200 dark:hover:border-gray-700 dark:hover:text-white"
+          :class="open ? 'border-gray-300 dark:border-gray-700' : ''">
+    {% if dd_eyebrow %}
+      <span class="text-gray-400 dark:text-gray-500">{{ dd_eyebrow }}</span>
+    {% endif %}
+    <span x-text="label"></span>
+    <span :class="open ? 'rotate-180' : ''"
+          class="text-gray-400 transition-transform duration-150 dark:text-gray-500">
+      {% icon "chevron-down" class="h-3.5 w-3.5" %}
+    </span>
+  </button>
+
+  <ul x-show="open"
+      @click.outside="open = false"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0 -translate-y-1"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="opacity-100 translate-y-0"
+      x-transition:leave-end="opacity-0 -translate-y-1"
+      role="listbox"
+      x-cloak
+      class="absolute {{ dd_align|default:'left-0' }} z-30 mt-2 min-w-[180px] origin-top overflow-hidden rounded-lg border border-gray-200 bg-white p-1 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+    {% for opt in dd_options %}
+      <li role="option" aria-selected="{{ opt.is_active|yesno:'true,false' }}">
+        {% if opt.href %}
+          <a href="{{ opt.href }}"
+             class="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-xs font-medium transition hover:bg-gray-50 dark:hover:bg-white/5 {% if opt.is_active %}bg-gray-50 text-gray-900 dark:bg-white/5 dark:text-white{% else %}text-gray-700 dark:text-gray-200{% endif %}">
+            <span>{{ opt.label }}</span>
+            {% if opt.is_active %}
+              <span class="text-brand-500">{% icon "check" class="h-3.5 w-3.5" %}</span>
+            {% endif %}
+          </a>
+        {% else %}
+          <button type="button"
+                  @click="
+                    label = '{{ opt.label|escapejs }}';
+                    open = false;
+                    document.dispatchEvent(new CustomEvent('signals:filter-change', {detail: {key: '{{ dd_filter_key|escapejs }}', value: '{{ opt.event_value|escapejs }}'}}));
+                  "
+                  class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-xs font-medium transition hover:bg-gray-50 dark:hover:bg-white/5 {% if opt.is_active %}bg-gray-50 text-gray-900 dark:bg-white/5 dark:text-white{% else %}text-gray-700 dark:text-gray-200{% endif %}">
+            <span>{{ opt.label }}</span>
+            {% if opt.is_active %}
+              <span class="text-brand-500">{% icon "check" class="h-3.5 w-3.5" %}</span>
+            {% endif %}
+          </button>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>

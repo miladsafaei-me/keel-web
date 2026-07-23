@@ -1,0 +1,20 @@
+{% load static %}
+{% comment %}
+Scripts for the shared body editor (blog + news add/edit). EasyMDE powers the
+Markdown tab; a standalone CodeMirror (htmlmixed + tag matching + active line +
+auto-close) powers the HTML tab; js-beautify pretty-prints the HTML on display.
+content-editor.js must load last. Included from each form's extra_js.
+{% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/matchtags.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-beautify@1.15.1/js/lib/beautify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-beautify@1.15.1/js/lib/beautify-html.min.js"></script>
+<script src="{% static 'keel_web_admin/js/content-editor.js' %}"></script>

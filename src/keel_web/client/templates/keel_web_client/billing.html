@@ -1,0 +1,16 @@
+{% extends "keel_web_client/base_client.html" %}
+{% load keel_icons %}
+
+{% block content %}
+<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-4 dark:bg-gray-800">
+      {% icon "credit-card-off" class="h-8 w-8" %}
+    </div>
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">No active subscription</h3>
+    <p class="mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
+      Billing details and plan management will appear here once subscriptions are wired up.
+    </p>
+  </div>
+</div>
+{% endblock %}

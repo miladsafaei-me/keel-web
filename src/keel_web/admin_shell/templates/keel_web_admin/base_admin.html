@@ -1,0 +1,86 @@
+{% load static keel_icons %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{% block title %}{{ page_title|default:"Admin" }}{% endblock %}{% block brand_suffix %}{% endblock %}</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="{% block meta_description %}Staff panel.{% endblock %}">
+
+  {% block favicon %}{% endblock %}
+
+  <link rel="stylesheet" href="{% static 'keel_web_client/css/client.css' %}">
+  {% block head_extra %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body
+  x-data="{ page: '{% block page_key %}{{ page_title|lower|default:'page' }}{% endblock %}', loaded: true, darkMode: false, sidebarToggle: false, userMenuOpen: false{% block extra_state %}{% endblock %} }"
+  x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode')) === true;
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+  :class="{'dark bg-gray-900': darkMode === true}"
+  x-cloak>
+
+  <div class="flex h-screen overflow-hidden">
+    {% include "keel_web_admin/_sidebar.html" %}
+
+    <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+      {# Mobile overlay backdrop #}
+      <div x-show="sidebarToggle"
+           @click="sidebarToggle = false"
+           x-transition.opacity
+           class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
+           aria-hidden="true"></div>
+
+      {% include "keel_web_admin/_navbar.html" %}
+
+      <main>
+        <div class="p-4 mx-auto max-w-screen-2xl md:p-6">
+          {% if messages %}
+            <div class="mb-6 space-y-2">
+              {% for m in messages %}
+                {% if m.tags == 'error' %}
+                  {% include "keel_web_client/_alert.html" with level='danger' icon='alert-circle' title='Something went wrong' body=m.message only %}
+                {% elif m.tags == 'success' %}
+                  {% include "keel_web_client/_alert.html" with level='success' icon='circle-check' title='Saved' body=m.message only %}
+                {% elif m.tags == 'warning' %}
+                  {% include "keel_web_client/_alert.html" with level='warning' icon='alert-triangle' title='Heads up' body=m.message only %}
+                {% else %}
+                  {% include "keel_web_client/_alert.html" with level='info' icon='info-circle' title='Info' body=m.message only %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% block breadcrumb %}
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div>
+                {% if page_pretitle %}
+                  <p class="text-xs font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">{{ page_pretitle }}</p>
+                {% endif %}
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                  {% block page_title %}{{ page_title }}{% endblock %}
+                </h2>
+                {% if page_subtitle %}
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ page_subtitle }}</p>
+                {% endif %}
+              </div>
+              <div class="flex flex-wrap gap-2">
+                {% block page_actions %}{% endblock %}
+              </div>
+            </div>
+          {% endblock %}
+
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  {% block alpine_scripts %}
+  <script src="{% static 'keel_web_client/vendor/alpine/alpine.min.js' %}" defer></script>
+  {% endblock %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

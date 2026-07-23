@@ -1,0 +1,4 @@
+recursive-include src/keel_web/admin_shell/templates *
+recursive-include src/keel_web/admin_shell/static *
+recursive-include src/keel_web/client/templates *
+recursive-include src/keel_web/client/static *

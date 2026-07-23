@@ -1,0 +1,64 @@
+{% load keel_icons %}<div x-show="isEmailModal"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isEmailModal = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto bg-gray-900/50 p-4">
+  <div @click="isEmailModal = false" class="absolute inset-0"></div>
+  <form method="post" novalidate
+        @click.stop
+        class="relative w-full max-w-[560px] rounded-3xl bg-white p-5 shadow-theme-lg dark:bg-gray-dark lg:p-8 my-8">
+    {% csrf_token %}
+    <input type="hidden" name="form" value="email">
+
+    <button type="button" @click="isEmailModal = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+            aria-label="Close">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+
+    <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+      Change Email Address
+    </h4>
+    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      Current: <span class="font-medium text-gray-700 dark:text-gray-300">{{ request.user.email }}</span>
+    </p>
+
+    {% if email_form.non_field_errors %}
+      <div class="mb-4 rounded-lg border border-error-500 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/15 dark:text-error-400">
+        {{ email_form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ email_form.email.id_for_label }}">
+          New email address<span class="text-error-500">*</span>
+        </label>
+        {{ email_form.email }}
+        {% if email_form.email.errors %}<p class="mt-1.5 text-xs text-error-500">{{ email_form.email.errors|join:" " }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ email_form.current_password.id_for_label }}">
+          Current password<span class="text-error-500">*</span>
+        </label>
+        {{ email_form.current_password }}
+        {% if email_form.current_password.errors %}
+          <p class="mt-1.5 text-xs text-error-500">{{ email_form.current_password.errors|join:" " }}</p>
+        {% else %}
+          <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">We re-check your password before changing your email.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mt-7 flex items-center justify-end gap-3">
+      <button type="button" @click="isEmailModal = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10 whitespace-nowrap">
+        Cancel
+      </button>
+      <button type="submit"
+              class="rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 whitespace-nowrap">
+        Update email
+      </button>
+    </div>
+  </form>
+</div>

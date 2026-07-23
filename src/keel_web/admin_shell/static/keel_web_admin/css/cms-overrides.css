@@ -1,0 +1,423 @@
+/**
+ * CMS (Django Admin / Unfold) Overrides
+ * Applies the Keel admin design system to Django-admin / Unfold CMS pages
+ * Load after Unfold styles + client.css (TailAdmin chrome)
+ */
+
+/* Revert only what Tailwind v4 preflight stripped from plain HTML elements;
+   skip border-collapse/padding/font so .data-table / .input-field / .btn keep
+   winning the cascade against `.dashboard-container <tag>`. */
+@scope (.dashboard-container) {
+    h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; }
+    h2 { font-size: 1.5em; font-weight: bold; margin: 0.83em 0; }
+    h3 { font-size: 1.17em; font-weight: bold; margin: 1em 0; }
+    h4 { font-size: 1em; font-weight: bold; margin: 1.33em 0; }
+    h5 { font-size: 0.83em; font-weight: bold; margin: 1.67em 0; }
+    h6 { font-size: 0.67em; font-weight: bold; margin: 2.33em 0; }
+    p { margin: 1em 0; }
+    hr { border-top: 1px solid; margin: 0.5em 0; }
+    ul, ol { list-style: revert; padding-left: 40px; margin: 1em 0; }
+    a { color: revert; text-decoration: underline; }
+    strong, b { font-weight: bolder; }
+    small { font-size: smaller; }
+    img, svg, video, canvas, audio, iframe, embed, object { display: revert; vertical-align: middle; }
+    img, video { max-width: 100%; height: auto; }
+}
+
+/* Scope to dashboard container where CMS content lives */
+.dashboard-container .container { max-width: 1400px; }
+
+/* Backgrounds - map Unfold to design tokens */
+.dashboard-container .bg-white,
+.dashboard-container .dark\:bg-base-900,
+.dashboard-container [class*="bg-base-"] { background: var(--bg-base) !important; }
+.dashboard-container .bg-base-50,
+.dashboard-container .dark\:bg-base-800 { background: var(--bg-subtle) !important; }
+
+/* Borders */
+.dashboard-container .border-base-200,
+.dashboard-container .dark\:border-base-800,
+.dashboard-container [class*="border-base-"] { border-color: var(--border-light) !important; }
+
+/* Text */
+.dashboard-container .text-font-default-light,
+.dashboard-container .dark\:text-font-default-dark,
+.dashboard-container [class*="text-base-"] { color: var(--text-primary) !important; }
+.dashboard-container .text-base-500,
+.dashboard-container .text-base-600 { color: var(--text-secondary) !important; }
+
+/* Form inputs - match design system */
+.dashboard-container input,
+.dashboard-container select,
+.dashboard-container textarea,
+.dashboard-container .input {
+    font-family: 'Inter', sans-serif !important;
+    border-radius: var(--radius-md) !important;
+    border-color: var(--border-light) !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+}
+.dashboard-container input:focus,
+.dashboard-container select:focus,
+.dashboard-container textarea:focus {
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 2px var(--mc-blue-bg) !important;
+    outline: none !important;
+}
+
+/* Primary buttons */
+.dashboard-container .bg-primary-600,
+.dashboard-container button[type="submit"].bg-primary-600,
+.dashboard-container a.bg-primary-600,
+.dashboard-container .btn-primary,
+.dashboard-container [class*="bg-primary-600"] {
+    background-color: var(--text-primary) !important;
+    color: var(--bg-base) !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid transparent !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+.dashboard-container .bg-primary-600:hover,
+.dashboard-container button[type="submit"].bg-primary-600:hover,
+.dashboard-container a.bg-primary-600:hover {
+    background-color: var(--btn-primary-hover-bg) !important;
+    color: var(--btn-primary-hover-fg) !important;
+}
+
+/* Outline buttons */
+.dashboard-container .border-base-200.bg-white,
+.dashboard-container a.border-base-200 {
+    background: var(--bg-base) !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-light) !important;
+}
+
+/* Global fixes */
+body, .dashboard-container { overflow-x: hidden !important; }
+
+/* TailAdmin chrome: restore desktop sidebar layout on CMS pages.
+   unfold/css/styles.css is loaded after client.css and re-declares
+   single-class utilities like `.fixed`. Variant utilities such as
+   `.lg:static` / `.lg:translate-x-0` only exist in client.css, so
+   Unfold's later `.fixed { position: fixed }` wins the cascade and
+   the sidebar stays fixed at >=1024px — overlapping the content.
+   Re-assert the desktop behaviour with a higher-specificity selector. */
+@media (min-width: 1024px) {
+    aside.ta-sidebar { position: static !important; transform: none !important; }
+}
+
+/* Tables & Change List */
+.dashboard-container #changelist-form {
+    background: var(--bg-base) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-micro) !important;
+    overflow: hidden !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+}
+.dashboard-container #changelist-form .results {
+    overflow-x: auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+}
+.dashboard-container .table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+.dashboard-container table { border-color: var(--border-light) !important; width: 100% !important; border-collapse: collapse !important; }
+.dashboard-container th,
+.dashboard-container td { border-color: var(--border-light) !important; padding: 14px 20px !important; }
+.dashboard-container thead th { background: var(--bg-subtle) !important; font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; color: var(--text-tertiary) !important; white-space: nowrap !important; }
+.dashboard-container tbody tr:hover { background-color: var(--bg-subtle) !important; }
+.dashboard-container .actions { padding: 16px 20px !important; background: var(--bg-base) !important; border-bottom: 1px solid var(--border-light) !important; }
+
+/* Flexbox fixes for horizontal scrolling */
+.dashboard-container #changelist {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+.dashboard-container #changelist .result-list-wrapper {
+    max-width: 100% !important;
+}
+
+/* Filter & Search Bar above list */
+.dashboard-container #changelist .flex.flex-col.gap-4 {
+    background: var(--bg-base) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 16px 20px !important;
+    margin-bottom: 24px !important;
+    box-shadow: var(--shadow-micro) !important;
+    align-items: center !important;
+}
+
+/* Cards / panels */
+.dashboard-container .rounded-default,
+.dashboard-container .rounded { border-radius: var(--radius-md) !important; }
+.dashboard-container .lg\:rounded-t-default { border-radius: var(--radius-md) var(--radius-md) 0 0 !important; }
+.dashboard-container .shadow-xs { box-shadow: var(--shadow-micro) !important; }
+
+/* Fieldset / form groups */
+.dashboard-container fieldset { border: 1px solid var(--border-light) !important; border-radius: var(--radius-lg) !important; }
+.dashboard-container .border-t { border-color: var(--border-light) !important; }
+.dashboard-container .p-4 { padding: 20px !important; }
+.dashboard-container label { font-size: 13px !important; font-weight: 600 !important; color: var(--text-primary) !important; }
+
+/* Submit row */
+.dashboard-container #content-main form .flex.flex-col.gap-6,
+.dashboard-container .submit-row { padding: 20px !important; }
+.dashboard-container .submit-row input[type="submit"] { background: var(--text-primary) !important; color: var(--bg-base) !important; border-radius: var(--radius-md) !important; }
+.dashboard-container .submit-row input[type="submit"].default { background: var(--text-primary) !important; }
+.dashboard-container .submit-row input[type="submit"]:hover { background: #000 !important; }
+
+/* Search form */
+.dashboard-container .border.rounded-default { border-color: var(--border-light) !important; border-radius: var(--radius-md) !important; }
+
+/* Filter sidebar */
+.dashboard-container .lg\:border-l { border-color: var(--border-light) !important; }
+
+/* Pagination */
+.dashboard-container .pagination a,
+.dashboard-container .pagination span { border-radius: var(--radius-md) !important; }
+.dashboard-container .pagination .current { background: var(--text-primary) !important; color: var(--bg-base) !important; }
+
+/* Error messages */
+.dashboard-container .errornote,
+.dashboard-container .errorlist { color: var(--status-danger) !important; }
+
+/* Links */
+.dashboard-container a.bg-primary-600 { text-decoration: none !important; }
+.dashboard-container a:hover { color: var(--accent-blue) !important; }
+
+/* Add/Change form layout - match edit-layout (blog/new style) */
+.dashboard-container #content-main form.edit-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.dashboard-container #content-main form.edit-layout .main-editor-col { display: flex; flex-direction: column; gap: 24px; }
+.dashboard-container #content-main form.edit-layout .sidebar-col { position: sticky; top: 88px; }
+@media (max-width: 1024px) {
+    .dashboard-container #content-main form.edit-layout { grid-template-columns: 1fr; }
+    .dashboard-container #content-main form.edit-layout .sidebar-col { position: static; }
+}
+
+/* CMS fieldset - hy-card style */
+.dashboard-container .cms-fieldset { margin-bottom: 24px; }
+.dashboard-container .cms-fieldset .card-body { padding: 20px; }
+.dashboard-container .cms-form-line { margin-bottom: 20px; }
+.dashboard-container .cms-form-line:last-child { margin-bottom: 0; }
+.dashboard-container .form-row-inline { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.dashboard-container .checkbox-row { display: flex; align-items: center; gap: 10px; }
+.dashboard-container .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--text-primary); cursor: pointer; }
+.dashboard-container .checkbox-row label { margin: 0; font-size: 14px; font-weight: 500; cursor: pointer; }
+
+/* Style Django admin form widgets inside cms fieldsets */
+.dashboard-container .cms-fieldset input[type="text"],
+.dashboard-container .cms-fieldset input[type="email"],
+.dashboard-container .cms-fieldset input[type="password"],
+.dashboard-container .cms-fieldset input[type="url"],
+.dashboard-container .cms-fieldset input[type="number"],
+.dashboard-container .cms-fieldset textarea,
+.dashboard-container .cms-fieldset select {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    width: 100% !important;
+    font-family: 'Inter', sans-serif !important;
+    background: var(--bg-base) !important;
+}
+.dashboard-container .cms-fieldset input:focus,
+.dashboard-container .cms-fieldset textarea:focus,
+.dashboard-container .cms-fieldset select:focus {
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 2px var(--mc-blue-bg) !important;
+    outline: none !important;
+}
+.dashboard-container .cms-fieldset label { display: block; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.dashboard-container .cms-fieldset .readonly-field { padding: 10px 12px; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 14px; }
+
+/* Submit row - match admin_os buttons */
+.dashboard-container .cms-submit-card .card-body { padding: 20px; }
+
+/* Base button styling for all submit buttons inside the card */
+.dashboard-container .cms-submit-card button[type="submit"],
+.dashboard-container .cms-submit-card input[type="submit"],
+.dashboard-container .cms-submit-card .submit-row button,
+.dashboard-container .cms-submit-card .submit-row input {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-md) !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    transition: all var(--transition-speed) !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Primary Button: Save */
+.dashboard-container .cms-submit-card button[name="_save"],
+.dashboard-container .cms-submit-card input[name="_save"],
+.dashboard-container .cms-submit-card input.default {
+    background: var(--text-primary) !important;
+    color: var(--bg-base) !important;
+    border: 1px solid var(--text-primary) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.dashboard-container .cms-submit-card button[name="_save"]:hover,
+.dashboard-container .cms-submit-card input[name="_save"]:hover,
+.dashboard-container .cms-submit-card input.default:hover {
+    background: #000 !important;
+    border-color: #000 !important;
+}
+
+/* Secondary Buttons: Save & Continue, Save & Add Another */
+.dashboard-container .cms-submit-card button[name="_continue"],
+.dashboard-container .cms-submit-card input[name="_continue"],
+.dashboard-container .cms-submit-card button[name="_addanother"],
+.dashboard-container .cms-submit-card input[name="_addanother"] {
+    background: var(--bg-surface) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-light) !important;
+    box-shadow: none !important;
+}
+.dashboard-container .cms-submit-card button[name="_continue"]:hover,
+.dashboard-container .cms-submit-card input[name="_continue"]:hover,
+.dashboard-container .cms-submit-card button[name="_addanother"]:hover,
+.dashboard-container .cms-submit-card input[name="_addanother"]:hover {
+    background: var(--bg-subtle) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-strong) !important;
+}
+
+/* Danger/Delete Link or Button */
+.dashboard-container .cms-submit-card a.deletelink,
+.dashboard-container .cms-submit-card a[href*="/delete/"],
+.dashboard-container .cms-submit-card button.bg-red-600 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+    color: var(--status-danger) !important;
+    border: 1px dashed var(--status-danger) !important;
+    border-radius: var(--radius-md) !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    transition: all var(--transition-speed) !important;
+    box-sizing: border-box !important;
+}
+.dashboard-container .cms-submit-card a.deletelink:hover,
+.dashboard-container .cms-submit-card a[href*="/delete/"]:hover,
+.dashboard-container .cms-submit-card button.bg-red-600:hover {
+    background: var(--mc-red-bg) !important;
+}
+
+/* Reset layout of Unfold's submit row */
+.dashboard-container .cms-submit-card #submit-row { display: flex !important; flex-direction: column !important; background: transparent !important; border: none !important; position: static !important; padding: 0 !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+.dashboard-container .cms-submit-card #submit-row > div { display: flex !important; flex-direction: column !important; background: transparent !important; padding: 0 !important; border: none !important; height: auto !important; min-height: 0 !important; width: 100% !important; gap: 8px !important; overflow: visible !important; }
+.dashboard-container .cms-submit-card #submit-row > div > div { display: flex !important; flex-direction: column !important; width: 100% !important; height: auto !important; min-height: 0 !important; gap: 8px !important; margin: 0 !important; overflow: visible !important; }
+.dashboard-container .cms-submit-card #submit-row > div > div > div { width: 100% !important; margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+.dashboard-container .cms-submit-card #submit-row p { margin: 0 0 8px 0; }
+.dashboard-container .cms-submit-card #submit-row p:last-child { margin-bottom: 0; }
+
+/* Hook on Unfold's fieldset tab nav (its only consumer of activeFieldsetTab);
+   we re-style from scratch because Unfold's bg-base-100 etc. collide with the
+   token remaps above. */
+.dashboard-container [x-data*="activeFieldsetTab"] {
+    margin-bottom: 24px;
+}
+.dashboard-container [x-data*="activeFieldsetTab"] > div:first-child {
+    border: none !important;
+    margin: 0 0 16px 0 !important;
+    padding: 0 !important;
+}
+.dashboard-container [x-data*="activeFieldsetTab"] > div > nav {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 4px !important;
+    background: var(--bg-subtle) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-micro) !important;
+    width: auto !important;
+}
+.dashboard-container [x-data*="activeFieldsetTab"] > div > nav > a {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+    background: transparent !important;
+    border-radius: var(--radius-sm) !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    border: 1px solid transparent !important;
+    transition: all var(--transition-speed) ease !important;
+    white-space: nowrap !important;
+}
+.dashboard-container [x-data*="activeFieldsetTab"] > div > nav > a:hover {
+    color: var(--text-primary) !important;
+    background: var(--bg-base) !important;
+}
+.dashboard-container [x-data*="activeFieldsetTab"] > div > nav > a.active {
+    color: var(--text-primary) !important;
+    background: var(--bg-base) !important;
+    border-color: var(--border-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* The wrapper around each tab's content already gets .hy-card.cms-fieldset
+   from our custom admin/includes/fieldset.html (rendered via stacked=1).
+   Strip the `.tab-wrapper` div's spacing so it doesn't add extra margin. */
+.dashboard-container [x-data*="activeFieldsetTab"] .tab-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* filter_horizontal / selector widget */
+.dashboard-container .cms-fieldset .selector { margin-top: 8px; }
+.dashboard-container .cms-fieldset .selector select { min-height: 120px; }
+.dashboard-container .cms-fieldset .selector-available,
+.dashboard-container .cms-fieldset .selector-chosen { padding: 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); }
+
+/* Unfold / Material Symbols
+   In this project we only ship the @font-face for Material Symbols, but not the usual
+   class rules. Without them, the ligature text (e.g. "expand_more") renders as plain text
+   and breaks layout in widgets like filter_horizontal. */
+.dashboard-container [class^="material-symbols"],
+.dashboard-container [class*=" material-symbols-"],
+.dashboard-container [class*="material-symbols-"] {
+    font-family: "Material Symbols Outlined" !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48 !important;
+    -webkit-font-feature-settings: "liga" 1 !important;
+    font-feature-settings: "liga" 1 !important;
+    text-rendering: optimizeLegibility !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    white-space: nowrap !important;
+    direction: ltr !important;
+}

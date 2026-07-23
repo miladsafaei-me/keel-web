@@ -1,0 +1,65 @@
+{% load client_extras static keel_icons %}
+{% with current_path=request.path %}
+<div class="dark contents">
+<aside
+  :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
+  class="ta-sidebar fixed left-0 top-0 z-50 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 transition-all duration-300 lg:static lg:translate-x-0 dark:border-gray-800 dark:bg-black">
+
+  <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
+       class="flex items-center gap-2 pt-8 pb-7">
+    <a href="{% url 'client:dashboard' %}" aria-label="Home">
+      <span class="logo" :class="sidebarToggle ? 'lg:hidden' : ''">
+        {% comment %}
+          Host supplies its brand mark by overriding the "panel_logo" block in a
+          base template, or by shipping static "keel_web_client/img/logo.svg".
+        {% endcomment %}
+        {% block panel_logo %}
+        <img src="{% static 'keel_web_client/img/logo.svg' %}" alt="{{ brand_name|default:'Home' }}"
+             class="h-18 w-auto" width="180" height="62">
+        {% endblock %}
+      </span>
+      <span class="logo-icon hidden text-brand-500"
+            :class="sidebarToggle ? 'lg:block' : ''">
+        {% icon "chart-candle" class="h-6 w-6" %}
+      </span>
+    </a>
+  </div>
+
+  <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+    <nav>
+      {% for section in client_nav %}
+      <div>
+        <h3 class="mb-4 flex text-xs leading-5 uppercase text-gray-400">
+          <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
+            {{ section.label }}
+          </span>
+          <span :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
+                class="mx-auto text-gray-400">
+            {% icon "dots" class="h-4 w-4" %}
+          </span>
+        </h3>
+
+        <ul class="mb-6 flex flex-col gap-1">
+          {% for item in section.items %}
+            {% with active=item|nav_item_active:current_path %}
+            <li>
+              <a href="{% url item.url_name %}"
+                 class="menu-item group {% if active %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                <span class="{% if active %}text-brand-500 dark:text-brand-400{% else %}text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300{% endif %}">
+                  {% icon item.icon class="h-5 w-5" %}
+                </span>
+                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                  {{ item.label }}
+                </span>
+              </a>
+            </li>
+            {% endwith %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </nav>
+  </div>
+</aside>
+</div>
+{% endwith %}

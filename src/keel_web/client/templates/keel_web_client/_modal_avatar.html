@@ -1,0 +1,195 @@
+{% load static client_extras keel_icons %}
+{# Composer config — kept outside x-data because JSON quotes break HTML attribute parsing. #}
+<script id="persona-layer-order" type="application/json">{{ persona_layer_order_json|safe }}</script>
+<script id="persona-choices" type="application/json">{{ persona_choices_json|safe }}</script>
+<script id="persona-initial" type="application/json">{{ persona_current_json|safe }}</script>
+<script id="persona-avatar-url" type="application/json">{{ persona_avatar_url_json|safe }}</script>
+
+<div x-show="isAvatarModal"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isAvatarModal = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto bg-gray-900/50 p-4"
+     x-data="personaComposer()">
+  <div @click="isAvatarModal = false" class="absolute inset-0"></div>
+
+  <form method="post" enctype="multipart/form-data" novalidate
+        @click.stop
+        @submit="onSubmit"
+        class="relative w-full max-w-3xl my-8 flex flex-col rounded-3xl bg-white shadow-theme-lg dark:bg-gray-dark max-h-[90vh]">
+    {% csrf_token %}
+    <input type="hidden" name="form" value="avatar">
+    <input type="hidden" name="persona" id="persona-config-input" value="">
+    <input type="hidden" name="clear" id="persona-clear-input" value="">
+
+    {# ---------- Header ---------- #}
+    <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800 lg:px-7 lg:py-5">
+      <div>
+        <h4 class="text-xl font-semibold text-gray-800 dark:text-white/90">Change avatar</h4>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Pick a preset, customize each layer, or upload your own.</p>
+      </div>
+      <button type="button" @click="isAvatarModal = false"
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+              aria-label="Close">
+        {% icon "x" class="h-5 w-5" %}
+      </button>
+    </div>
+
+    {# ---------- Body (scrollable) ---------- #}
+    <div class="flex-1 overflow-y-auto px-5 py-5 lg:px-7">
+
+      {% if avatar_form.errors %}
+        <div class="mb-4 rounded-lg border border-error-500 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/15 dark:text-error-400">
+          {% if avatar_form.non_field_errors %}{{ avatar_form.non_field_errors|join:" " }}{% endif %}
+          {% for field in avatar_form %}{% for err in field.errors %}<div>{{ err }}</div>{% endfor %}{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-6 md:grid-cols-[200px_1fr]">
+
+        {# ===== LEFT: live preview + per-layer actions ===== #}
+        <aside class="space-y-3 md:sticky md:top-0 md:self-start">
+          <div class="relative aspect-square w-full overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-gray-100 to-gray-200 shadow-theme-lg ring-1 ring-gray-200 dark:from-gray-800 dark:to-gray-900 dark:ring-gray-700"
+               id="persona-preview">
+            {% if request.user.avatar_persona_layers %}
+              {% for folder, filename in request.user.avatar_persona_layers %}
+                <img src="{% static 'keel_web_client/img/personas/' %}{{ folder }}/{{ filename }}" alt="" class="absolute inset-0 h-full w-full" aria-hidden="true">
+              {% endfor %}
+            {% elif request.user.avatar %}
+              <img src="{{ request.user.avatar.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" aria-hidden="true">
+            {% endif %}
+          </div>
+
+          <div x-show="tab === 'customize'" x-cloak class="space-y-2">
+            <button type="button" @click="randomLayer(activeLayer)"
+                    class="flex w-full items-center justify-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10 whitespace-nowrap">
+              {% icon "refresh" class="h-3.5 w-3.5" %}
+              Random <span x-text="layerLabel(activeLayer).toLowerCase()"></span>
+            </button>
+            <button type="button" @click="randomAll"
+                    class="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-600 whitespace-nowrap">
+              {% icon "dice-5" class="h-3.5 w-3.5" %}
+              Surprise me
+            </button>
+          </div>
+
+          <div x-show="tab === 'upload'" x-cloak class="text-xs text-gray-500 dark:text-gray-400 text-center">
+            Live preview will update once you pick a file.
+          </div>
+        </aside>
+
+        {# ===== RIGHT: mode tabs + active pane ===== #}
+        <div class="min-w-0">
+
+          {# Mode tabs #}
+          <div role="tablist" class="flex items-center gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+            <button type="button" @click="tab = 'presets'"
+                    :class="tab === 'presets' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap">
+              {% icon "grid-dots" class="h-4 w-4" %} Presets
+            </button>
+            <button type="button" @click="tab = 'customize'"
+                    :class="tab === 'customize' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap">
+              {% icon "palette" class="h-4 w-4" %} Customize
+            </button>
+            <button type="button" @click="tab = 'upload'"
+                    :class="tab === 'upload' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap">
+              {% icon "upload" class="h-4 w-4" %} Upload
+            </button>
+          </div>
+
+          {# Pane: Presets #}
+          <div x-show="tab === 'presets'" x-cloak class="mt-5">
+            <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+              Pick a starting persona, then refine in <button type="button" class="font-medium text-brand-500 hover:underline" @click="tab = 'customize'">Customize</button>.
+            </p>
+            <div class="grid grid-cols-4 gap-3">
+              {% for p in persona_presets %}
+                <button type="button"
+                        data-preset='{"bg":"{{ p.bg }}","body":"{{ p.body }}","skin":"{{ p.skin }}","hair":"{{ p.hair }}","eyes":"{{ p.eyes }}","mouth":"{{ p.mouth }}","nose":"{{ p.nose }}","facialHair":"{{ p.facialHair }}"}'
+                        @click="applyPreset(JSON.parse($el.dataset.preset))"
+                        class="persona-preset relative aspect-square w-full overflow-hidden rounded-full border-2 border-gray-200 transition hover:-translate-y-0.5 hover:border-gray-400 hover:shadow-theme-sm dark:border-gray-800"
+                        aria-label="Persona preset {{ forloop.counter }}">
+                  <img src="{% static 'keel_web_client/img/personas/Background/' %}{{ p.bg }}" class="absolute inset-0 h-full w-full" alt="">
+                  <img src="{% static 'keel_web_client/img/personas/Body/' %}{{ p.body }}"       class="absolute inset-0 h-full w-full" alt="">
+                  <img src="{% static 'keel_web_client/img/personas/Skin/' %}{{ p.skin }}"       class="absolute inset-0 h-full w-full" alt="">
+                  <img src="{% static 'keel_web_client/img/personas/Hair/' %}{{ p.hair }}"       class="absolute inset-0 h-full w-full" alt="">
+                  {% if p.facialHair %}<img src="{% static 'keel_web_client/img/personas/FacialHair/' %}{{ p.facialHair }}" class="absolute inset-0 h-full w-full" alt="">{% endif %}
+                  <img src="{% static 'keel_web_client/img/personas/Mouth/' %}{{ p.mouth }}"     class="absolute inset-0 h-full w-full" alt="">
+                  <img src="{% static 'keel_web_client/img/personas/Nose/' %}{{ p.nose }}"       class="absolute inset-0 h-full w-full" alt="">
+                  <img src="{% static 'keel_web_client/img/personas/Eyes/' %}{{ p.eyes }}"       class="absolute inset-0 h-full w-full" alt="">
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          {# Pane: Customize #}
+          <div x-show="tab === 'customize'" x-cloak class="mt-5">
+            {# Layer pill tabs (sub-tabs) #}
+            <div class="-mx-1 overflow-x-auto pb-2">
+              <div class="flex gap-1.5 px-1">
+                <template x-for="layer in layerOrder" :key="layer">
+                  <button type="button"
+                          @click="setActiveLayer(layer)"
+                          :class="activeLayer === layer
+                            ? 'bg-brand-500 text-white border-brand-500'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-800 dark:hover:border-gray-600'"
+                          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition whitespace-nowrap">
+                    <span x-text="layerLabel(layer)"></span>
+                    <span x-show="state[layer]" class="inline-block h-1 w-1 rounded-full bg-current opacity-60"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            {# Active-layer header + grid #}
+            <div class="mt-4 flex items-baseline justify-between">
+              <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">
+                <span x-text="layerLabel(activeLayer)"></span>
+                <span class="ml-2 text-xs font-normal text-gray-400" x-text="layerCount(activeLayer)"></span>
+              </h5>
+            </div>
+            <div id="layer-options" class="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-5"></div>
+          </div>
+
+          {# Pane: Upload #}
+          <div x-show="tab === 'upload'" x-cloak class="mt-5 space-y-3">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400" for="avatar-upload-input">
+              Upload from your device
+            </label>
+            <input type="file" name="avatar" id="avatar-upload-input"
+                   accept="image/png,image/jpeg,image/webp,image/gif"
+                   @change="onFileChange"
+                   class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-white text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-brand-500 hover:file:bg-brand-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:file:bg-brand-500/15 dark:file:text-brand-400">
+            <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, WEBP, or GIF. Max 5 MB.</p>
+            {% if avatar_form.avatar.errors %}<p class="text-xs text-error-500">{{ avatar_form.avatar.errors|join:" " }}</p>{% endif %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    {# ---------- Footer ---------- #}
+    <div class="flex items-center justify-between gap-3 border-t border-gray-200 px-5 py-4 dark:border-gray-800 lg:px-7">
+      <button type="button" @click="onClear"
+              class="text-sm font-medium text-error-500 hover:underline whitespace-nowrap">
+        {% icon "trash" class="h-4 w-4 inline" %} Remove avatar
+      </button>
+      <div class="flex gap-3">
+        <button type="button" @click="isAvatarModal = false"
+                class="rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10 whitespace-nowrap">
+          Cancel
+        </button>
+        <button type="submit"
+                class="rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 whitespace-nowrap">
+          Save avatar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script id="persona-static-prefix" type="application/json">"{% static 'keel_web_client/img/personas/' %}"</script>
+<script src="{% static 'keel_web_client/js/persona.js' %}" defer></script>

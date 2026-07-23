@@ -1,0 +1,82 @@
+# keel-web — package guide
+
+Part of the **Keel** platform (see keel-kit `PLATFORM.md`). Three Bucket-2/3
+reusable Django apps + a static-storage module: the auth foundation, the staff
+panel shell, and the client panel shell. English only; no banner comments; CSS
+variables only in any styling; multi-line Django template comments use
+`{% comment %}…{% endcomment %}` (never multi-line `{# … #}`).
+
+## Boundaries — what is here vs what stays in the host
+
+- **Here (generic):**
+  - `keel_web.auth` — `AbstractKeelUser` + concrete `User`, `SingleSessionMiddleware`
+    + login signal, allauth adapters (with the lead hook gated), branded email
+    helpers, `account_status`, persona catalogue, phone helpers, the four
+    account-settings forms, the `keel_icons` tag set.
+  - `keel_web.admin_shell` — TailAdmin chrome (`base_admin`/`base`/`_sidebar`/`_navbar`),
+    the field-agnostic 3-tab content editor partials, permission mixins,
+    `resolve_nav_active`, the Gemini image-gen HTTP/decode/retry core, the WebP
+    image-upload helper, and the admin CSS/JS.
+  - `keel_web.client` — `base_client` + partials, profile/settings + persona
+    builder + billing stub + resend-verification, `NavItem`/`NavSection` +
+    `resolve_client_nav`, `client_extras` tags, the shared TailAdmin CSS/JS bundle.
+  - `keel_web.storage.KeelManifestStaticFilesStorage`.
+- **Stays in the host (Bucket-0):** coupon/purchase/lead models + `record_web_lead`
+  (wired via `KEEL_WEB["signup_lead_hook"]`), the concrete `CLIENT_NAV` (wired via
+  `KEEL_WEB["client_nav"]`), all trading/signals/affiliate/onboarding pages + views,
+  the product/market/licensing/Telegram-robot admin, the AI-settings field list
+  (image-gen resolvers come in via `KEEL_WEB["image_gen"]` hooks), and the orphaned
+  Gemini FOREX system-prompt `.txt`.
+
+## Editing rule (drift prevention)
+
+When a consuming project has this installed, its copy of these files is **not**
+editable in that project — change them **here**, bump the version, and let the
+project pull the new version. Project-specific behaviour belongs in `KEEL_WEB`
+config hooks or template blocks, never in a fork of this code.
+
+## Namespacing contract (collision-safe)
+
+Each app is a submodule of `keel_web` whose default label would collide with a
+Django built-in (`auth`) or read ambiguously (`admin_shell`, `client`), so every
+`AppConfig` sets an explicit `label` (`keel_web_auth`, `keel_web_admin`,
+`keel_web_client`). Templates/static are namespaced under those labels
+(`keel_web_client/…`, `keel_web_admin/…`). The staff shell reuses the client
+CSS/JS bundle (`keel_web_client/css/client.css`, `…/vendor/alpine`), so a project
+using only the staff panel still needs the `keel_web_client` static installed.
+
+## Override hooks (config-contract) — see `keel_web/config.py`
+
+The full table is in `README.md`. The seams, by area:
+
+- **Auth:** `user_db_table` (adoption), `signup_lead_hook`, `content_editor_group`,
+  `client_path_prefix`, `email_logo_static`, plus standard `BRAND_NAME` /
+  `SITE_BASE_URL` / `DEFAULT_FROM_EMAIL`.
+- **Staff panel:** `permission_denied_redirect`; the host builds its own nav data
+  and calls `resolve_nav_active`; the content-editor partial reads endpoint URLs
+  from context (`editor_convert_url`, `editor_upload_url`, `editor_ai_inline_url`,
+  `editor_featured_url`, `editor_post_id`, `editor_is_pipeline`).
+- **Client panel:** `client_nav`, `client_base_context_hook`; templates expose the
+  `panel_logo` / `panel_banner` / `brand_suffix` / `favicon` / `head_extra` blocks
+  and the `admin_home_url` context var.
+- **Image gen:** `image_gen.api_key_hook` / `hero_url_hook` / `inline_url_hook` /
+  `aspect_ratio_hook` / `hero_system_instruction_hook` / `inline_system_instruction_hook`
+  — each with an env-style default so it works with zero hooks.
+- **Storage:** `static_skip_hash_prefixes`, `static_minify_skip_substrings`.
+
+## Adoption note (host migration — the delicate part of `W3`)
+
+Swapping the user model is the risky step: point `KEEL_WEB["user_db_table"]` at the
+host's existing table (e.g. `users_user`) so adoption is a state-level
+`AlterModelTable` rather than a row copy, keep the host's own domain fields
+(coupons, purchases) in a host app that subclasses `AbstractKeelUser` or lives
+alongside the concrete `User`, and sequence the migration behind the host's canary
+deploy. Verify login, single-session enforcement, and that the client + admin
+panels render before cutover.
+
+## The Tailwind build (client/admin chrome)
+
+The panel chrome is TailAdmin v2 (Tailwind 4). `keel_web_client/tailwind/input.css`
+is the source; `keel_web_client/css/client.css` is the built output that templates
+load. Rebuild the output in the host after editing `input.css`; the storage backend
+skips hashing the raw `tailwind/` source (`static_skip_hash_prefixes`).

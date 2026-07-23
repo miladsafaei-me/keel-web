@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "keel-web"
+version = "0.1.0"
+description = "Keel Web — reusable auth foundation, staff-panel shell, and client-panel shell (custom User, single-session, allauth adapters, TailAdmin chrome, persona avatars, image-gen core)."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Milad Safaei" }]
+license = { text = "UNLICENSED" }
+dependencies = [
+    "Django>=4.2",
+    "django-allauth>=0.60",
+    "whitenoise>=6.0",
+    "Pillow>=10.0",
+    "requests>=2.28",
+    "phonenumbers>=8.13",
+    "pycountry>=22.0",
+]
+
+# Optional: in-place CSS/JS minification in the manifest static storage. The
+# storage backend degrades gracefully (no minify) when these are absent.
+[project.optional-dependencies]
+minify = ["rcssmin>=1.1", "rjsmin>=1.2"]
+
+[project.urls]
+Homepage = "https://github.com/miladsafaei-me/keel-web"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/keel_web"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/keel_web/admin_shell/templates" = "keel_web/admin_shell/templates"
+"src/keel_web/admin_shell/static" = "keel_web/admin_shell/static"
+"src/keel_web/client/templates" = "keel_web/client/templates"
+"src/keel_web/client/static" = "keel_web/client/static"

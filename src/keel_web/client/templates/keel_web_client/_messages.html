@@ -1,0 +1,20 @@
+{% comment %}
+Shared django.contrib.messages renderer for the client panel. Rendered once,
+globally, from base_client.html. Iterating `messages` consumes it, so pages
+must not render it again.
+{% endcomment %}
+{% if messages %}
+  <div class="space-y-2 mb-6">
+    {% for m in messages %}
+      {% if m.tags == 'error' %}
+        {% include "keel_web_client/_alert.html" with level='danger' icon='alert-circle' title='Something went wrong' body=m.message only %}
+      {% elif m.tags == 'success' %}
+        {% include "keel_web_client/_alert.html" with level='success' icon='circle-check' title='Done' body=m.message only %}
+      {% elif m.tags == 'warning' %}
+        {% include "keel_web_client/_alert.html" with level='warning' icon='alert-triangle' title='Heads up' body=m.message only %}
+      {% else %}
+        {% include "keel_web_client/_alert.html" with level='info' icon='info-circle' title='Info' body=m.message only %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

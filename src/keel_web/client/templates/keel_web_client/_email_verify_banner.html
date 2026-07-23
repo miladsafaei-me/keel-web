@@ -1,0 +1,30 @@
+{% load keel_icons %}
+{% comment %}
+Top-of-panel reminder shown until the account's email is verified. Driven by
+`account_email_unverified` (users.context_processors.account_status); the
+Resend action posts to client:resend_verification.
+{% endcomment %}
+<div class="border-b border-warning-500/30 bg-warning-50 dark:border-warning-500/20 dark:bg-warning-500/10"
+     role="alert"
+     x-data="{ show: true }" x-show="show" x-transition>
+  <div class="mx-auto flex max-w-screen-2xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 md:px-6">
+    <span class="text-warning-500">{% icon "alert-triangle" class="h-5 w-5" %}</span>
+    <p class="flex-1 min-w-0 text-sm text-warning-700 dark:text-warning-400">
+      <span class="font-semibold">Verify your email address.</span>
+      Confirm <span class="font-medium">{{ request.user.email }}</span> to secure your account and unlock account notifications.
+    </p>
+    <form method="post" action="{% url 'client:resend_verification' %}" class="m-0">
+      {% csrf_token %}
+      <button type="submit"
+              class="inline-flex items-center gap-2 rounded-lg border border-warning-500/40 bg-white px-3 py-1.5 text-xs font-medium text-warning-700 hover:bg-warning-50 dark:bg-transparent dark:text-warning-400 dark:hover:bg-warning-500/10">
+        {% icon "mail" class="h-4 w-4" %}
+        Resend link
+      </button>
+    </form>
+    <button type="button" @click="show = false"
+            class="text-warning-500/70 hover:text-warning-700 dark:hover:text-warning-300"
+            aria-label="Dismiss">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+  </div>
+</div>

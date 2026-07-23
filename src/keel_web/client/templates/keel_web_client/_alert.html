@@ -1,0 +1,20 @@
+{% load keel_icons %}{% with palette_success='border-success-500 bg-success-50 dark:border-success-500/30 dark:bg-success-500/15 text-success-500' palette_error='border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15 text-error-500' palette_warning='border-warning-500 bg-warning-50 dark:border-warning-500/30 dark:bg-warning-500/15 text-warning-500' palette_info='border-blue-light-500 bg-blue-light-50 dark:border-blue-light-500/30 dark:bg-blue-light-500/15 text-blue-light-500' %}
+<div class="rounded-xl border p-4 {% if level == 'success' %}{{ palette_success }}{% elif level == 'danger' or level == 'error' %}{{ palette_error }}{% elif level == 'warning' %}{{ palette_warning }}{% else %}{{ palette_info }}{% endif %}"
+     role="alert"
+     x-data="{ show: true }" x-show="show" x-transition>
+  <div class="flex items-start gap-3">
+    <div class="-mt-0.5">
+      {% icon icon class="h-5 w-5" %}
+    </div>
+    <div class="flex-1 min-w-0">
+      {% if title %}<h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ title }}</h4>{% endif %}
+      {% if body %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ body }}</p>{% endif %}
+    </div>
+    <button type="button" @click="show = false"
+            class="text-gray-400 hover:text-gray-700 dark:hover:text-white"
+            aria-label="Dismiss">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+  </div>
+</div>
+{% endwith %}

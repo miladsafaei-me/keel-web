@@ -1,0 +1,100 @@
+{% load keel_icons %}
+{% comment %}
+Phone field with country dial-code picker.
+Required context vars (passed via include with):
+  country_field   - BoundField for hidden alpha2 country code
+  national_field  - BoundField for digits-only national number
+  label           - human label, e.g. "Phone"
+  field_id        - slug for unique DOM ids, e.g. "phone" / "whatsapp" / "viber"
+{% endcomment %}
+<div class="lg:col-span-2">
+  <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="id_{{ field_id }}_national">
+    {{ label }} <span class="font-normal text-gray-400">(optional)</span>
+  </label>
+
+  <div x-data="phonePicker({ alpha2: '{{ country_field.value|default_if_none:''|escapejs }}', label: '{{ label|escapejs }}' })"
+       x-init="init()"
+       class="flex w-full">
+    {# Country picker button #}
+    <div class="relative shrink-0">
+      <button type="button"
+              @click="open = !open; if (open) $nextTick(() => $refs.searchInput && $refs.searchInput.focus())"
+              :aria-expanded="open"
+              class="flex h-11 items-center gap-2 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+        <span class="text-base leading-none" x-text="selected.flag || '🌐'"></span>
+        <span class="font-mono text-xs tabular-nums" x-text="selected.dial || '+?'"></span>
+        <span class="transition-transform" :class="{ 'rotate-180': open }">
+          {% icon "chevron-down" class="h-3.5 w-3.5 text-gray-400" %}
+        </span>
+      </button>
+
+      <input type="hidden"
+             name="{{ country_field.html_name }}"
+             id="id_{{ field_id }}_country"
+             :value="selected.alpha2 || ''">
+
+      {# Dropdown panel #}
+      <div x-show="open"
+           x-cloak
+           x-transition.opacity.duration.150ms
+           @click.outside="open = false"
+           @keydown.escape.window="open = false"
+           class="absolute left-0 top-full z-50 mt-1.5 w-[280px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+        <div class="border-b border-gray-100 p-2 dark:border-gray-800">
+          <div class="relative">
+            {% icon "search" class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" %}
+            <input type="text"
+                   x-model="search"
+                   x-ref="searchInput"
+                   @click.stop
+                   placeholder="Search country or +code"
+                   autocomplete="off"
+                   class="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 text-xs text-gray-700 placeholder:text-gray-400 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+          </div>
+        </div>
+        <ul class="max-h-64 overflow-y-auto py-1">
+          <template x-for="c in options" :key="c.alpha2">
+            <li>
+              <button type="button"
+                      @click="select(c)"
+                      class="flex w-full items-center gap-2.5 px-3 py-2 text-left text-xs transition hover:bg-brand-50 dark:hover:bg-brand-500/10"
+                      :class="c.alpha2 === selected.alpha2 ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400' : 'text-gray-700 dark:text-gray-300'">
+                <span class="text-base leading-none" x-text="c.flag"></span>
+                <span class="flex-1 truncate font-medium" x-text="c.name"></span>
+                <span class="font-mono tabular-nums text-gray-400" x-text="c.dial"></span>
+              </button>
+            </li>
+          </template>
+          <template x-if="options.length === 0">
+            <li class="px-3 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+              No countries match "<span x-text="search"></span>"
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+
+    {# National-number input (digits only) #}
+    <input type="tel"
+           name="{{ national_field.html_name }}"
+           id="id_{{ field_id }}_national"
+           value="{{ national_field.value|default_if_none:'' }}"
+           inputmode="numeric"
+           pattern="[0-9]*"
+           autocomplete="tel-national"
+           data-phone-input="1"
+           x-ref="national"
+           @input="onNationalInput($event)"
+           @blur="onNationalBlur()"
+           :placeholder="selected.sample_digits || '5551234567'"
+           class="ta-input flex-1 rounded-l-none {% if national_field.errors %}border-error-400 dark:border-error-500/40{% endif %}">
+  </div>
+
+  {% if national_field.errors %}
+    <p class="mt-1.5 text-xs text-error-500" data-phone-server-error="{{ field_id }}">{{ national_field.errors|join:" " }}</p>
+  {% else %}
+    <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+      Pick your country, then enter digits only — no spaces, dashes, or country code.
+    </p>
+  {% endif %}
+</div>

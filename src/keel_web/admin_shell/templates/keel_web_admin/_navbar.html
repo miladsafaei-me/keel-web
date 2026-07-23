@@ -1,0 +1,92 @@
+{% load static client_extras keel_icons %}
+<header class="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
+  <div class="flex flex-grow items-center justify-between px-4 py-3 sm:gap-4 lg:px-6 lg:py-4">
+
+    {# Hamburger toggle (mobile + desktop sidebar collapse) #}
+    <div class="flex items-center gap-4">
+      <button
+        @click="sidebarToggle = !sidebarToggle"
+        :class="sidebarToggle ? 'bg-gray-100 dark:bg-gray-800' : ''"
+        class="z-40 flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
+        aria-label="Toggle sidebar">
+        {% icon "menu-2" class="h-5 w-5" %}
+      </button>
+
+      <a href="/" class="hidden lg:inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+        {% icon "external-link" class="h-4 w-4" %}
+        <span>View site</span>
+      </a>
+    </div>
+
+    {# Right cluster: client switch + dark-mode toggle + user dropdown #}
+    <div class="flex items-center gap-3">
+
+      {% if request.user|can_switch_panels %}
+      <a href="{% url 'client:dashboard' %}"
+         class="hidden sm:inline-flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
+         title="Switch to client console">
+        {% icon "switch-horizontal" class="h-4 w-4" %}
+        <span>Client</span>
+      </a>
+      {% endif %}
+
+      <button
+        @click="darkMode = !darkMode"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+        aria-label="Toggle dark mode">
+        <span x-show="darkMode">{% icon "sun" class="h-5 w-5" %}</span>
+        <span x-show="!darkMode">{% icon "moon" class="h-5 w-5" %}</span>
+      </button>
+
+      <div class="relative" @click.outside="userMenuOpen = false">
+        <button
+          @click="userMenuOpen = !userMenuOpen"
+          class="flex items-center gap-3 rounded-full border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+          {% persona_avatar request.user "h-7 w-7" %}
+          <span class="hidden md:block font-medium">{{ request.user.username|default:request.user.email }}</span>
+          {% icon "chevron-down" class="h-3 w-3 text-gray-400" %}
+        </button>
+
+        <div x-show="userMenuOpen"
+             x-transition
+             x-cloak
+             class="absolute right-0 mt-3 flex w-64 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+          <div class="border-b border-gray-200 pb-3 dark:border-gray-800">
+            <span class="block font-medium text-gray-700 text-sm dark:text-gray-300">
+              {{ request.user.display_name }}
+            </span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">
+              {{ request.user.email }}
+            </span>
+          </div>
+          <ul class="flex flex-col gap-1 border-b border-gray-200 pt-3 pb-3 dark:border-gray-800">
+            {% if request.user|can_switch_panels %}
+            <li>
+              <a href="{% url 'client:dashboard' %}"
+                 class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                {% icon "switch-horizontal" class="h-4 w-4" %}
+                Switch to client
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <a href="{% url 'client:profile' %}"
+                 class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                {% icon "user-cog" class="h-4 w-4" %}
+                Profile
+              </a>
+            </li>
+          </ul>
+          <form method="post" action="{% url 'account_logout' %}" class="mt-3 m-0">
+            {% csrf_token %}
+            <button type="submit"
+                    class="group w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+              {% icon "logout" class="h-4 w-4" %}
+              Sign out
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

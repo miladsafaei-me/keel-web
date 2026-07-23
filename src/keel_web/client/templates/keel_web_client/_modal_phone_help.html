@@ -1,0 +1,74 @@
+{% load keel_icons %}
+{% comment %}
+Modern, minimal modal that explains how to fill a phone field
+when the user enters an invalid value. Bound to body-level
+`phoneHelp` state and triggered via the `phone-help-open` window event
+dispatched by the phonePicker Alpine component.
+{% endcomment %}
+<div @phone-help-open.window="
+        phoneHelp.open = true;
+        phoneHelp.label = $event.detail.label || 'Phone';
+        phoneHelp.message = $event.detail.message || '';
+        phoneHelp.country = $event.detail.country || null;
+     "
+     x-show="phoneHelp.open"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="phoneHelp.open = false"
+     class="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+  <div @click="phoneHelp.open = false"
+       class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+
+  <div @click.stop
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 scale-95"
+       x-transition:enter-end="opacity-100 scale-100"
+       class="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-theme-xl dark:bg-gray-dark">
+    <div class="flex items-start gap-4 p-5">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warning-50 text-warning-500 dark:bg-warning-500/10 dark:text-warning-400">
+        {% icon "alert-triangle" class="h-5 w-5" %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="text-base font-semibold text-gray-800 dark:text-white/90">
+          <span x-text="phoneHelp.label"></span> format
+        </h4>
+
+        <template x-if="phoneHelp.country">
+          <div class="mt-2 inline-flex items-center gap-2 rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span class="text-sm leading-none" x-text="phoneHelp.country.flag"></span>
+            <span x-text="phoneHelp.country.name"></span>
+            <span class="font-mono tabular-nums text-gray-400" x-text="phoneHelp.country.dial"></span>
+          </div>
+        </template>
+
+        <p class="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+           x-text="phoneHelp.message"></p>
+
+        <ul class="mt-3 space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <li class="flex items-start gap-1.5">
+            <span class="mt-1 block h-1 w-1 rounded-full bg-gray-400"></span>
+            Use English digits only — no spaces, dashes, or symbols.
+          </li>
+          <li class="flex items-start gap-1.5">
+            <span class="mt-1 block h-1 w-1 rounded-full bg-gray-400"></span>
+            Don't include the country code in the number — pick it from the dropdown.
+          </li>
+          <template x-if="phoneHelp.country && phoneHelp.country.sample_national">
+            <li class="flex items-start gap-1.5">
+              <span class="mt-1 block h-1 w-1 rounded-full bg-gray-400"></span>
+              Example: <span class="font-mono tabular-nums" x-text="phoneHelp.country.sample_national"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flex justify-end border-t border-gray-100 px-5 py-3 dark:border-gray-800">
+      <button type="button"
+              @click="phoneHelp.open = false"
+              class="rounded-full bg-brand-500 px-4 py-2 text-xs font-medium text-white shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
+        Got it
+      </button>
+    </div>
+  </div>
+</div>

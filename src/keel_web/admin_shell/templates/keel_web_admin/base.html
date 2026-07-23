@@ -1,0 +1,68 @@
+{% extends "keel_web_admin/base_admin.html" %}
+{% load static keel_icons %}
+
+{% comment %}
+Compat shim used by Django admin / Unfold templates. Provides the legacy
+block names (`extra_css`, `topbar_back`, `topbar_title`, `topbar_actions`)
+on top of the modern TailAdmin chrome from `base_admin.html`.
+
+New staff pages should extend `base_admin.html` directly. This file exists only
+so Unfold's templates (in `templates/admin/` and `templates/unfold/layouts/`)
+can extend `keel_web_admin/base.html` and inherit the TailAdmin chrome.
+{% endcomment %}
+
+{% comment %}
+Unfold's change_form wraps every fieldset in `x-show="activeTab == 'general'"`.
+The variable is normally initialised by Unfold's own skeleton layout, but our
+TailAdmin-based base_admin.html doesn't set it. Without this seed, every
+fieldset on every Unfold change_form is hidden and the page renders empty
+(only the form_top banner and submit row visible). The tabbed-fieldset
+container creates its own `activeFieldsetTab` scope, so we don't need it
+here.
+{% endcomment %}
+{% block extra_state %}, activeTab: 'general'{% endblock %}
+
+{% block alpine_scripts %}
+  {% comment %}
+  Unfold ships its own Alpine.js bundle (anchor + persist + sort + resize
+  plugins). Use that instead of the basic Alpine from base_admin.html so
+  Unfold's interactive features keep working.
+  {% endcomment %}
+  <script src="{% static 'unfold/js/alpine/alpine.anchor.js' %}" defer></script>
+  <script src="{% static 'unfold/js/alpine/alpine.persist.js' %}" defer></script>
+  <script src="{% static 'unfold/js/alpine/alpine.sort.js' %}" defer></script>
+  <script src="{% static 'unfold/js/alpine/alpine.resize.js' %}" defer></script>
+  <script src="{% static 'unfold/js/alpine/alpine.js' %}" defer></script>
+{% endblock %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'keel_web_admin/css/admin-os-style.css' %}">
+  <link rel="stylesheet" href="{% static 'keel_web_admin/css/cms-overrides.css' %}">
+  {% block extra_css %}{% endblock %}
+{% endblock %}
+
+{% block breadcrumb %}
+{% comment %}
+Breadcrumb stays OUTSIDE .dashboard-container so admin-os-style.css's
+`* { margin:0; padding:0 }` reset doesn't nuke the Tailwind chrome
+utilities (mb-6, gap-3, ...) used here.
+{% endcomment %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div class="flex items-center gap-3">
+    {% block topbar_back %}{% endblock %}
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+      {% block topbar_title %}{{ page_title|default:"Admin" }}{% endblock %}
+    </h2>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    {% block topbar_actions %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  {% block cms_content %}{% endblock %}
+</div>
+{% endblock %}

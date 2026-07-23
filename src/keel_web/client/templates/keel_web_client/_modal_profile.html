@@ -1,0 +1,84 @@
+{% load keel_icons %}<div x-show="isProfileModal"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isProfileModal = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto bg-gray-900/50 p-4">
+  <div @click="isProfileModal = false" class="absolute inset-0"></div>
+  <form method="post" novalidate
+        @click.stop
+        class="relative w-full max-w-[700px] rounded-3xl bg-white p-5 shadow-theme-lg dark:bg-gray-dark lg:p-8 my-8">
+    {% csrf_token %}
+    <input type="hidden" name="form" value="profile">
+
+    <button type="button" @click="isProfileModal = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+            aria-label="Close">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+
+    <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+      Edit Personal Information
+    </h4>
+    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      Update your name, country, and contact details.
+    </p>
+
+    {% if profile_form.non_field_errors %}
+      <div class="mb-4 rounded-lg border border-error-500 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/15 dark:text-error-400">
+        {{ profile_form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-6">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ profile_form.first_name.id_for_label }}">
+          First Name<span class="text-error-500">*</span>
+        </label>
+        {{ profile_form.first_name }}
+        {% if profile_form.first_name.errors %}<p class="mt-1.5 text-xs text-error-500">{{ profile_form.first_name.errors|join:" " }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ profile_form.last_name.id_for_label }}">
+          Last Name
+        </label>
+        {{ profile_form.last_name }}
+        {% if profile_form.last_name.errors %}<p class="mt-1.5 text-xs text-error-500">{{ profile_form.last_name.errors|join:" " }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ profile_form.country.id_for_label }}">
+          Country
+        </label>
+        {{ profile_form.country }}
+        {% if profile_form.country.errors %}<p class="mt-1.5 text-xs text-error-500">{{ profile_form.country.errors|join:" " }}</p>{% endif %}
+      </div>
+      {% include "keel_web_client/_phone_picker_field.html" with country_field=profile_form.phone_country national_field=profile_form.phone_national label="Phone" field_id="phone" %}
+
+      <div class="lg:col-span-2">
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="{{ profile_form.telegram_id.id_for_label }}">
+          Telegram ID <span class="font-normal text-gray-400">(optional)</span>
+        </label>
+        {{ profile_form.telegram_id }}
+        {% if profile_form.telegram_id.errors %}
+          <p class="mt-1.5 text-xs text-error-500">{{ profile_form.telegram_id.errors|join:" " }}</p>
+        {% else %}
+          <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">5–32 Latin letters, digits, or underscores. Optional leading @.</p>
+        {% endif %}
+      </div>
+
+      {% include "keel_web_client/_phone_picker_field.html" with country_field=profile_form.whatsapp_country national_field=profile_form.whatsapp_national label="WhatsApp number" field_id="whatsapp" %}
+
+      {% include "keel_web_client/_phone_picker_field.html" with country_field=profile_form.viber_country national_field=profile_form.viber_national label="Viber number" field_id="viber" %}
+    </div>
+
+    <div class="mt-7 flex items-center justify-end gap-3">
+      <button type="button" @click="isProfileModal = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10 whitespace-nowrap">
+        Cancel
+      </button>
+      <button type="submit"
+              class="rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 whitespace-nowrap">
+        Save changes
+      </button>
+    </div>
+  </form>
+</div>

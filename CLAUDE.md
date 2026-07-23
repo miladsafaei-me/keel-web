@@ -66,13 +66,23 @@ The full table is in `README.md`. The seams, by area:
 
 ## Adoption note (host migration — the delicate part of `W3`)
 
-Swapping the user model is the risky step: point `KEEL_WEB["user_db_table"]` at the
-host's existing table (e.g. `users_user`) so adoption is a state-level
-`AlterModelTable` rather than a row copy, keep the host's own domain fields
-(coupons, purchases) in a host app that subclasses `AbstractKeelUser` or lives
-alongside the concrete `User`, and sequence the migration behind the host's canary
-deploy. Verify login, single-session enforcement, and that the client + admin
-panels render before cutover.
+Two adoption paths (see README step 3). The **safe** one for a project that
+already has a live user table is to **subclass, not swap**: keep your concrete
+`User` and change its base to `AbstractKeelUser`, imported from
+`keel_web.auth.base` (a module that defines **no** concrete model). Do **not** add
+`keel_web.auth` to `INSTALLED_APPS` on this path — its own concrete `User` would
+otherwise register and clash with yours on the `auth.Group`/`auth.Permission`
+reverse accessors (`fields.E304`), and importing `keel_web.auth.models` (which
+defines that concrete `User`) with the app uninstalled raises at import time —
+hence the model-free `base.py`. `AUTH_USER_MODEL`, the table, and every existing
+FK/migration stay exactly as they are; the field set matches, so `makemigrations`
+is a no-op. Keep the host's own domain fields (coupons, purchases) alongside your
+`User`. The alternative — installing `keel_web.auth` and pointing
+`AUTH_USER_MODEL` at `keel_web_auth.User` with `user_db_table` — is a genuine
+`AUTH_USER_MODEL` swap (swappable-dependency churn on every FK migration) and is
+only worth it on a fresh or near-empty project. Either way: verify login,
+single-session enforcement, and that the client + admin panels render before
+cutover. SignalBots uses the subclass path (`W3`).
 
 ## The Tailwind build (client/admin chrome)
 

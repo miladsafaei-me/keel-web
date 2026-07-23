@@ -32,9 +32,18 @@ original reached into them, there is now a config hook.
 1. `pip install keel-web` (or a git/editable install during development).
 2. Add the app(s) to `INSTALLED_APPS`: `keel_web.auth`, `keel_web.admin_shell`,
    `keel_web.client` (each declares its own collision-safe label).
-3. Point `AUTH_USER_MODEL = "keel_web_auth.User"` (fresh project), or set
-   `KEEL_WEB["user_db_table"]` to an existing user table to adopt with a
-   metadata-only migration and subclass/swap in your own app.
+3. Choose one of two user-model paths:
+   - **Fresh project:** add `keel_web.auth` to `INSTALLED_APPS` and point
+     `AUTH_USER_MODEL = "keel_web_auth.User"` (optionally set
+     `KEEL_WEB["user_db_table"]` to reuse an existing table name).
+   - **Adopt an existing user table (no `AUTH_USER_MODEL` swap):** keep your own
+     concrete `User` and subclass the abstract base —
+     `from keel_web.auth.base import AbstractKeelUser`. `base.py` defines **no**
+     concrete model, so you do **not** install `keel_web.auth` (installing it
+     would register keel-web's own concrete `User`, whose `groups`/
+     `user_permissions` reverse accessors then clash with yours). Your existing
+     `AUTH_USER_MODEL` + table are untouched; `user_db_table` is irrelevant on
+     this path. This is how SignalBots consumes keel-web (its `W3` wire).
 4. Wire allauth: `ACCOUNT_ADAPTER = "keel_web.auth.adapters.AccountAdapter"`,
    `SOCIALACCOUNT_ADAPTER = "keel_web.auth.adapters.SocialAccountAdapter"`.
 5. Add `keel_web.auth.middleware.SingleSessionMiddleware` to `MIDDLEWARE` and

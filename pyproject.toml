@@ -30,9 +30,6 @@ Homepage = "https://github.com/miladsafaei-me/keel-web"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/keel_web"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/keel_web/admin_shell/templates" = "keel_web/admin_shell/templates"
-"src/keel_web/admin_shell/static" = "keel_web/admin_shell/static"
-"src/keel_web/client/templates" = "keel_web/client/templates"
-"src/keel_web/client/static" = "keel_web/client/static"
+# hatchling includes every file under the package (templates/, static/, migrations/,
+# non-.py assets) automatically — no force-include (which would double-add them and
+# fail the build with "a second file is being added at the same path").

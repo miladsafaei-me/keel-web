@@ -74,7 +74,7 @@ var for the staff-panel switch link.
 
 ## Status
 
-v0.1.0 — Python core + shell templates/static extracted and neutralized;
-self-validated by compile + coupling inspection. Live wiring into a host
-(user-model migration + settings + parity on `localhost:8082`) is the host's WIRE
-step (`W3`).
+v0.1.2 — extracted, neutralized, and consumed by SignalBots (its first host): the
+custom `User` is adopted by subclassing `AbstractKeelUser` (no `AUTH_USER_MODEL`
+swap), and single-session middleware, the allauth adapters, the transactional-email
+chrome, and the staff/client panel shells are all live.

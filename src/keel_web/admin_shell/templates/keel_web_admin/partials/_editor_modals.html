@@ -1,0 +1,151 @@
+{% load keel_icons %}
+{% comment %}
+Modals the shared content-editor.js drives from the editor toolbar (link / hosted
+image / AI image / reading-resource). Include this once inside any page that renders
+the three-tab content editor, alongside the _content_editor* partials. The
+surrounding page's Alpine root must declare the state flags
+isModalLink / isModalImage / isModalAi / isModalRead (see the page's extra_state
+block). The AI modal is inert unless the editor config supplies an aiInlineUrl.
+{% endcomment %}
+<div x-show="isModalImage"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isModalImage = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 p-4">
+  <div @click="isModalImage = false" class="absolute inset-0"></div>
+  <div @click.stop class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-theme-lg dark:bg-gray-dark">
+    <button type="button" @click="isModalImage = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">Insert image (hosted)</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Image file</label>
+        <input type="file" id="content-image-input" accept="image/*"
+               class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-white text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-brand-500 hover:file:bg-brand-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:file:bg-brand-500/15 dark:file:text-brand-400">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Caption (optional)</label>
+        <input type="text" id="content-image-caption" placeholder="Figure caption..." class="ta-input">
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+      <button type="button" @click="isModalImage = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10">Cancel</button>
+      <button type="button" id="btn-insert-figure"
+              class="rounded-full bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">Insert</button>
+    </div>
+  </div>
+</div>
+
+<div x-show="isModalAi"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isModalAi = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 p-4">
+  <div @click="isModalAi = false" class="absolute inset-0"></div>
+  <div @click.stop class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-theme-lg dark:bg-gray-dark">
+    <button type="button" @click="isModalAi = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">Generate image (AI)</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" for="ai-inline-image-prompt">Prompt</label>
+        <textarea id="ai-inline-image-prompt" rows="4" placeholder="Describe the image to generate…" class="ta-input"></textarea>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" for="ai-inline-image-caption">Caption (optional)</label>
+        <input type="text" id="ai-inline-image-caption" placeholder="Figure caption…" autocomplete="off" class="ta-input">
+      </div>
+      <div id="ai-inline-image-preview-wrap" hidden>
+        <img src="" alt="" id="ai-inline-image-preview" class="w-full rounded-lg border border-gray-200 dark:border-gray-700">
+      </div>
+      <p id="ai-inline-image-status" class="text-xs text-gray-500 dark:text-gray-400" aria-live="polite"></p>
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+      <button type="button" @click="isModalAi = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10">Cancel</button>
+      <button type="button" id="btn-ai-inline-image-generate"
+              class="rounded-full border border-brand-500 bg-white px-4 py-2 text-sm font-medium text-brand-500 hover:bg-brand-50 dark:bg-gray-800 dark:hover:bg-brand-500/10">Generate</button>
+      <button type="button" id="btn-ai-inline-image-insert" disabled
+              class="rounded-full bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50">Insert</button>
+    </div>
+  </div>
+</div>
+
+<div x-show="isModalRead"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isModalRead = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 p-4">
+  <div @click="isModalRead = false" class="absolute inset-0"></div>
+  <div @click.stop class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-theme-lg dark:bg-gray-dark">
+    <button type="button" @click="isModalRead = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">Add reading resource box</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">URL</label>
+        <input type="url" id="read-resource-url" placeholder="https://..." class="ta-input">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Link text / Title</label>
+        <input type="text" id="read-resource-title" placeholder="Article or resource title" class="ta-input">
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+      <button type="button" @click="isModalRead = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10">Cancel</button>
+      <button type="button" id="btn-insert-read"
+              class="rounded-full bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">Insert</button>
+    </div>
+  </div>
+</div>
+
+<div x-show="isModalLink"
+     x-transition.opacity
+     x-cloak
+     @keydown.escape.window="isModalLink = false"
+     class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 p-4">
+  <div @click="isModalLink = false" class="absolute inset-0"></div>
+  <div @click.stop class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-theme-lg dark:bg-gray-dark">
+    <button type="button" @click="isModalLink = false"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/10">
+      {% icon "x" class="h-5 w-5" %}
+    </button>
+    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">Insert or edit link</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" for="link-anchor-text">Anchor text</label>
+        <input type="text" id="link-anchor-text" placeholder="Visible link text" autocomplete="off" class="ta-input">
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" for="link-url">URL</label>
+        <input type="url" id="link-url" placeholder="https://…" autocomplete="off" class="ta-input">
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Options</label>
+        <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-new-tab" checked class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> Open in new tab (target="_blank")</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-nofollow" class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> rel="nofollow"</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-sponsored" class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> rel="sponsored"</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-ugc" class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> rel="ugc"</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-rel-noopener" class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> rel="noopener"</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="link-rel-noreferrer" class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"> rel="noreferrer"</label>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400">For target="_blank", browsers recommend noopener (and often noreferrer) to reduce tab-nabbing risk; enable them only if you want them stored on the link.</p>
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+      <button type="button" @click="isModalLink = false"
+              class="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10">Cancel</button>
+      <button type="button" id="btn-insert-link"
+              class="rounded-full bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">Insert</button>
+    </div>
+  </div>
+</div>

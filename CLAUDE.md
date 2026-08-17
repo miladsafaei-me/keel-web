@@ -6,6 +6,10 @@ panel shell, and the client panel shell. English only; no banner comments; CSS
 variables only in any styling; multi-line Django template comments use
 `{% comment %}…{% endcomment %}` (never multi-line `{# … #}`).
 
+## Task tracking
+
+Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), not in chat memory. Every pending task — priority, prerequisites/dependencies, enough context to resume cold — goes there before starting new work; remove a task from TODO.md the moment it's done.
+
 ## Boundaries — what is here vs what stays in the host
 
 - **Here (generic):**

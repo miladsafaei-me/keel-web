@@ -25,7 +25,7 @@
     {% include "keel_web_client/_sidebar.html" %}
 
     <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
-      {# Mobile overlay backdrop #}
+      {% comment %} Mobile overlay backdrop {% endcomment %}
       <div x-show="sidebarToggle"
            @click="sidebarToggle = false"
            x-transition.opacity

@@ -1,5 +1,5 @@
 {% load static client_extras keel_icons %}
-{# Composer config — kept outside x-data because JSON quotes break HTML attribute parsing. #}
+{% comment %} Composer config — kept outside x-data because JSON quotes break HTML attribute parsing. {% endcomment %}
 <script id="persona-layer-order" type="application/json">{{ persona_layer_order_json|safe }}</script>
 <script id="persona-choices" type="application/json">{{ persona_choices_json|safe }}</script>
 <script id="persona-initial" type="application/json">{{ persona_current_json|safe }}</script>
@@ -22,7 +22,7 @@
     <input type="hidden" name="persona" id="persona-config-input" value="">
     <input type="hidden" name="clear" id="persona-clear-input" value="">
 
-    {# ---------- Header ---------- #}
+    {% comment %} ---------- Header ---------- {% endcomment %}
     <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800 lg:px-7 lg:py-5">
       <div>
         <h4 class="text-xl font-semibold text-gray-800 dark:text-white/90">Change avatar</h4>
@@ -35,7 +35,7 @@
       </button>
     </div>
 
-    {# ---------- Body (scrollable) ---------- #}
+    {% comment %} ---------- Body (scrollable) ---------- {% endcomment %}
     <div class="flex-1 overflow-y-auto px-5 py-5 lg:px-7">
 
       {% if avatar_form.errors %}
@@ -47,7 +47,7 @@
 
       <div class="grid gap-6 md:grid-cols-[200px_1fr]">
 
-        {# ===== LEFT: live preview + per-layer actions ===== #}
+        {% comment %} ===== LEFT: live preview + per-layer actions ===== {% endcomment %}
         <aside class="space-y-3 md:sticky md:top-0 md:self-start">
           <div class="relative aspect-square w-full overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-gray-100 to-gray-200 shadow-theme-lg ring-1 ring-gray-200 dark:from-gray-800 dark:to-gray-900 dark:ring-gray-700"
                id="persona-preview">
@@ -78,10 +78,10 @@
           </div>
         </aside>
 
-        {# ===== RIGHT: mode tabs + active pane ===== #}
+        {% comment %} ===== RIGHT: mode tabs + active pane ===== {% endcomment %}
         <div class="min-w-0">
 
-          {# Mode tabs #}
+          {% comment %} Mode tabs {% endcomment %}
           <div role="tablist" class="flex items-center gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
             <button type="button" @click="tab = 'presets'"
                     :class="tab === 'presets' ? 'bg-white text-gray-900 shadow-theme-xs dark:bg-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
@@ -100,7 +100,7 @@
             </button>
           </div>
 
-          {# Pane: Presets #}
+          {% comment %} Pane: Presets {% endcomment %}
           <div x-show="tab === 'presets'" x-cloak class="mt-5">
             <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
               Pick a starting persona, then refine in <button type="button" class="font-medium text-brand-500 hover:underline" @click="tab = 'customize'">Customize</button>.
@@ -125,9 +125,9 @@
             </div>
           </div>
 
-          {# Pane: Customize #}
+          {% comment %} Pane: Customize {% endcomment %}
           <div x-show="tab === 'customize'" x-cloak class="mt-5">
-            {# Layer pill tabs (sub-tabs) #}
+            {% comment %} Layer pill tabs (sub-tabs) {% endcomment %}
             <div class="-mx-1 overflow-x-auto pb-2">
               <div class="flex gap-1.5 px-1">
                 <template x-for="layer in layerOrder" :key="layer">
@@ -144,7 +144,7 @@
               </div>
             </div>
 
-            {# Active-layer header + grid #}
+            {% comment %} Active-layer header + grid {% endcomment %}
             <div class="mt-4 flex items-baseline justify-between">
               <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">
                 <span x-text="layerLabel(activeLayer)"></span>
@@ -154,7 +154,7 @@
             <div id="layer-options" class="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-5"></div>
           </div>
 
-          {# Pane: Upload #}
+          {% comment %} Pane: Upload {% endcomment %}
           <div x-show="tab === 'upload'" x-cloak class="mt-5 space-y-3">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-400" for="avatar-upload-input">
               Upload from your device
@@ -171,7 +171,7 @@
       </div>
     </div>
 
-    {# ---------- Footer ---------- #}
+    {% comment %} ---------- Footer ---------- {% endcomment %}
     <div class="flex items-center justify-between gap-3 border-t border-gray-200 px-5 py-4 dark:border-gray-800 lg:px-7">
       <button type="button" @click="onClear"
               class="text-sm font-medium text-error-500 hover:underline whitespace-nowrap">

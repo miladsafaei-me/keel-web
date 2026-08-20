@@ -2,7 +2,7 @@
 <header class="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
   <div class="flex flex-grow items-center justify-between px-4 py-3 sm:gap-4 lg:px-6 lg:py-4">
 
-    {# Hamburger toggle (mobile + desktop sidebar collapse) #}
+    {% comment %} Hamburger toggle (mobile + desktop sidebar collapse) {% endcomment %}
     <div class="flex items-center gap-4">
       <button
         @click="sidebarToggle = !sidebarToggle"
@@ -18,10 +18,10 @@
       </a>
     </div>
 
-    {# Right cluster: admin switch + dark-mode toggle + user dropdown #}
+    {% comment %} Right cluster: admin switch + dark-mode toggle + user dropdown {% endcomment %}
     <div class="flex items-center gap-3">
 
-      {# Host supplies admin_home_url (its staff-panel home) to enable the switch. #}
+      {% comment %} Host supplies admin_home_url (its staff-panel home) to enable the switch. {% endcomment %}
       {% if admin_home_url and request.user|can_switch_panels %}
       <a href="{{ admin_home_url }}"
          class="hidden sm:inline-flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700 hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"

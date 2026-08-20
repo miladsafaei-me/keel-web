@@ -2,7 +2,7 @@
 <header class="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
   <div class="flex flex-grow items-center justify-between px-4 py-3 sm:gap-4 lg:px-6 lg:py-4">
 
-    {# Hamburger toggle (mobile + desktop sidebar collapse) #}
+    {% comment %} Hamburger toggle (mobile + desktop sidebar collapse) {% endcomment %}
     <div class="flex items-center gap-4">
       <button
         @click="sidebarToggle = !sidebarToggle"
@@ -18,7 +18,7 @@
       </a>
     </div>
 
-    {# Right cluster: client switch + dark-mode toggle + user dropdown #}
+    {% comment %} Right cluster: client switch + dark-mode toggle + user dropdown {% endcomment %}
     <div class="flex items-center gap-3">
 
       {% if request.user|can_switch_panels %}

@@ -15,7 +15,7 @@ Required context vars (passed via include with):
   <div x-data="phonePicker({ alpha2: '{{ country_field.value|default_if_none:''|escapejs }}', label: '{{ label|escapejs }}' })"
        x-init="init()"
        class="flex w-full">
-    {# Country picker button #}
+    {% comment %} Country picker button {% endcomment %}
     <div class="relative shrink-0">
       <button type="button"
               @click="open = !open; if (open) $nextTick(() => $refs.searchInput && $refs.searchInput.focus())"
@@ -33,7 +33,7 @@ Required context vars (passed via include with):
              id="id_{{ field_id }}_country"
              :value="selected.alpha2 || ''">
 
-      {# Dropdown panel #}
+      {% comment %} Dropdown panel {% endcomment %}
       <div x-show="open"
            x-cloak
            x-transition.opacity.duration.150ms
@@ -74,7 +74,7 @@ Required context vars (passed via include with):
       </div>
     </div>
 
-    {# National-number input (digits only) #}
+    {% comment %} National-number input (digits only) {% endcomment %}
     <input type="tel"
            name="{{ national_field.html_name }}"
            id="id_{{ field_id }}_national"

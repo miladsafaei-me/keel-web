@@ -16,8 +16,12 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
+    "django.contrib.staticfiles",
+    "keel_web.csrf_defer",
     "tests.hostapp",
 ]
+
+STATIC_URL = "/static/"
 
 MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",

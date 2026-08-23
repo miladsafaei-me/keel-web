@@ -1,5 +1,12 @@
-from django.http import HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError
 from django.shortcuts import render
+
+
+def csrf_check(request):
+    """A plain CSRF-protected POST target -- exercises the deferred-CSRF flow
+    end to end: fetch a token from keel_web.csrf_defer, then post here with it.
+    """
+    return HttpResponse("ok")
 
 
 def public_page(request):

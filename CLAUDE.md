@@ -29,6 +29,12 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     of a public page edge-cacheable (no `Set-Cookie`, no uncacheable `Vary`,
     a `Cache-Control` header) without touching any other request. Off by
     default (`KEEL_WEB["anonymous_page_cache"]["enabled"]`).
+  - `keel_web.csrf_defer` — the deferred-CSRF token endpoint + JS helper: lets
+    a page with an incidental form (newsletter, header search) ship with no
+    CSRF cookie at all, so it stays eligible for the edge caching above. No
+    `KEEL_WEB` key — the URL is fixed by design. See `keel_web/csrf_defer/views.py`
+    module docstring for the mechanism and the trade-off, and README's
+    "Deferred CSRF" section for the wiring recipe.
 - **Stays in the host (Bucket-0):** coupon/purchase/lead models + `record_web_lead`
   (wired via `KEEL_WEB["signup_lead_hook"]`), the concrete `CLIENT_NAV` (wired via
   `KEEL_WEB["client_nav"]`), all trading/signals/affiliate/onboarding pages + views,
@@ -76,6 +82,11 @@ The full table is in `README.md`. The seams, by area:
   `.drop_csrf_cookie` — see `keel_web/cache.py` module docstring for the full
   mechanism and the required `MIDDLEWARE` position (directly after
   `SessionMiddleware`).
+- **Deferred CSRF:** no config key. Install `keel_web.csrf_defer`, mount
+  `keel_web.csrf_defer.urls` at the URLconf root (fixed path `/csrf-token/` on
+  every consumer, on purpose), swap `{% csrf_token %}` for
+  `data-keel-deferred-csrf` + a hidden `csrfmiddlewaretoken` input on the
+  incidental form, and load `keel_web_csrf/js/deferred-csrf.js`.
 
 ## Adoption note (host migration — the delicate part of `W3`)
 

@@ -21,6 +21,10 @@ CSS/JS minify) is a top-level module usable on its own, as is
 `keel_web.cache.AnonymousPageCacheMiddleware` (edge-cacheable anonymous public
 pages — see below).
 
+A fourth, minimal app — `keel_web_csrf` / `keel_web.csrf_defer` — ships the
+deferred-CSRF token endpoint and its JS helper (also below). It has no models
+and no dependency on the other three apps.
+
 ## What stays in the host (Bucket-0 — NOT here)
 
 The coupon / purchase / lead models + `record_web_lead`, the concrete `CLIENT_NAV`
@@ -59,6 +63,11 @@ original reached into them, there is now a config hook.
    after** `django.contrib.sessions.middleware.SessionMiddleware`, and set
    `KEEL_WEB["anonymous_page_cache"]["enabled"] = True`. See
    [Anonymous page caching](#anonymous-page-caching-keel_webcache) below.
+10. Optional: if step 9 is otherwise blocked by a page's own `{% csrf_token %}`
+    (a newsletter box, a header search field), add `"keel_web.csrf_defer"` to
+    `INSTALLED_APPS` and `path("", include("keel_web.csrf_defer.urls"))` to the
+    root URLconf. See
+    [Deferred CSRF](#deferred-csrf-keel_webcsrf_defer) below.
 
 ## Config-contract / override seams (`KEEL_WEB`)
 
@@ -131,9 +140,65 @@ Even with every key configured, a response that still carries any
 never marked cacheable — serving one visitor's cookie to another is the one
 failure this middleware exists to prevent, so that check cannot be turned off.
 
+## Deferred CSRF (`keel_web.csrf_defer`)
+
+`AnonymousPageCacheMiddleware` above fixes the *session*-cookie half of edge
+cacheability. It cannot fix the other common cause of an uncacheable
+`Set-Cookie`: a page that renders `{% csrf_token %}` for a form that is merely
+incidental to that page — a newsletter signup, a header search box — makes
+Django set a CSRF cookie on *every* response that includes it, even though
+nothing about the page is personalised. Dropping that cookie
+(`drop_csrf_cookie` above) would just break the form. `keel_web.csrf_defer` is
+the real fix: the page ships with **no** token and **no** CSRF cookie at all,
+and the token is fetched on demand, just before the form actually submits.
+
+**Only use this for a form that is incidental to the page.** A page whose
+*purpose* is the form — login, signup, checkout — should keep the ordinary
+`{% csrf_token %}` and simply not be cached. Full trade-off explanation:
+`keel_web/csrf_defer/views.py` module docstring.
+
+Wiring — the exact same recipe on every consumer:
+
+1. Add `"keel_web.csrf_defer"` to `INSTALLED_APPS` (registers the
+   `keel_web_csrf` static namespace; no models, no migrations).
+2. Mount the URL fragment, unmodified, at the root of the URLconf:
+
+   ```python
+   urlpatterns = [
+       ...,
+       path("", include("keel_web.csrf_defer.urls")),
+       ...,
+   ]
+   ```
+
+   This puts the endpoint at `/csrf-token/` — the same path on every
+   consumer, because the JS helper below hardcodes it too.
+3. In the template, drop `{% csrf_token %}` from the incidental form and add
+   the marker attribute + an empty hidden field instead:
+
+   ```html
+   <form method="post" action="{% url 'newsletter_signup' %}" data-keel-deferred-csrf>
+     <input type="hidden" name="csrfmiddlewaretoken" value="">
+     <input type="email" name="email">
+     <button type="submit">Subscribe</button>
+   </form>
+   ```
+
+4. Load the JS helper through the host's normal static/css-bundles pipeline
+   (never an inline `<script>` block):
+
+   ```html
+   <script src="{% static 'keel_web_csrf/js/deferred-csrf.js' %}"></script>
+   ```
+
+No `KEEL_WEB` settings key exists for this feature — the endpoint path is
+fixed on purpose so every consumer agrees with the JS helper without any
+per-host configuration.
+
 ## Status
 
-v0.1.2 — extracted, neutralized, and consumed by SignalBots (its first host): the
+v0.3.0 — extracted, neutralized, and consumed by SignalBots (its first host): the
 custom `User` is adopted by subclassing `AbstractKeelUser` (no `AUTH_USER_MODEL`
-swap), and single-session middleware, the allauth adapters, the transactional-email
-chrome, and the staff/client panel shells are all live.
+swap), single-session middleware, the allauth adapters, the transactional-email
+chrome, the staff/client panel shells, the `.xlsx` export helper, anonymous
+edge-page caching, and deferred CSRF are all live.

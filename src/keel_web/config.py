@@ -55,6 +55,29 @@ domain-neutral.
             "hero_system_instruction_hook": None,   # () -> str
             "inline_system_instruction_hook": None, # () -> str
         },
+
+        # Edge-cacheability for anonymous GET/HEAD of public pages. See
+        # keel_web/cache.py for the full story. Off by default: no consumer's
+        # behaviour changes just from upgrading the package.
+        "anonymous_page_cache": {
+            "enabled": False,
+            # Path prefixes that legitimately need a real session or a
+            # personalised response (own auth/admin/client areas by default;
+            # add a host's own forum/account paths on top of these).
+            "exempt_prefixes": ("/admin", "/accounts", "/client"),
+            "browser_max_age": 300,   # Cache-Control max-age (seconds)
+            "edge_max_age": 3600,     # Cache-Control s-maxage (seconds)
+            # Vary header field names to strip, e.g. ("Accept-Language",) on a
+            # site that serves exactly one language from every URL. Opt-in
+            # only — never drop a field a site's URLs genuinely vary on.
+            "vary_drop": (),
+            # Drop a CSRF cookie from an otherwise-eligible response. Off by
+            # default: a page with a real POST form needs that cookie. The
+            # better fix for a page that only ever renders {% csrf_token %} in
+            # a GET-only form (a header search box, say) is usually to stop
+            # rendering the token there, not to strip the cookie here.
+            "drop_csrf_cookie": False,
+        },
     }
 """
 from __future__ import annotations
@@ -87,6 +110,14 @@ _DEFAULTS = {
         "hero_system_instruction_hook": None,
         "inline_system_instruction_hook": None,
     },
+    "anonymous_page_cache": {
+        "enabled": False,
+        "exempt_prefixes": ("/admin", "/accounts", "/client"),
+        "browser_max_age": 300,
+        "edge_max_age": 3600,
+        "vary_drop": (),
+        "drop_csrf_cookie": False,
+    },
 }
 
 
@@ -99,6 +130,12 @@ def image_gen_setting(key):
     """Return ``KEEL_WEB["image_gen"][key]`` or its package default."""
     configured = getattr(settings, "KEEL_WEB", {}).get("image_gen", {}) or {}
     return configured.get(key, _DEFAULTS["image_gen"][key])
+
+
+def anonymous_page_cache_setting(key):
+    """Return ``KEEL_WEB["anonymous_page_cache"][key]`` or its package default."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("anonymous_page_cache", {}) or {}
+    return configured.get(key, _DEFAULTS["anonymous_page_cache"][key])
 
 
 def call_hook(dotted, *args, default=None, **kwargs):

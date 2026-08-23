@@ -25,6 +25,10 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     builder + billing stub + resend-verification, `NavItem`/`NavSection` +
     `resolve_client_nav`, `client_extras` tags, the shared TailAdmin CSS/JS bundle.
   - `keel_web.storage.KeelManifestStaticFilesStorage`.
+  - `keel_web.cache.AnonymousPageCacheMiddleware` — makes an anonymous GET/HEAD
+    of a public page edge-cacheable (no `Set-Cookie`, no uncacheable `Vary`,
+    a `Cache-Control` header) without touching any other request. Off by
+    default (`KEEL_WEB["anonymous_page_cache"]["enabled"]`).
 - **Stays in the host (Bucket-0):** coupon/purchase/lead models + `record_web_lead`
   (wired via `KEEL_WEB["signup_lead_hook"]`), the concrete `CLIENT_NAV` (wired via
   `KEEL_WEB["client_nav"]`), all trading/signals/affiliate/onboarding pages + views,
@@ -67,6 +71,11 @@ The full table is in `README.md`. The seams, by area:
   `aspect_ratio_hook` / `hero_system_instruction_hook` / `inline_system_instruction_hook`
   — each with an env-style default so it works with zero hooks.
 - **Storage:** `static_skip_hash_prefixes`, `static_minify_skip_substrings`.
+- **Anonymous page cache:** `anonymous_page_cache.enabled` /
+  `.exempt_prefixes` / `.browser_max_age` / `.edge_max_age` / `.vary_drop` /
+  `.drop_csrf_cookie` — see `keel_web/cache.py` module docstring for the full
+  mechanism and the required `MIDDLEWARE` position (directly after
+  `SessionMiddleware`).
 
 ## Adoption note (host migration — the delicate part of `W3`)
 

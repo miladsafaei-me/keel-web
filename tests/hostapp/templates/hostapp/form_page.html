@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<head><title>Test Form Page</title></head>
+<body>
+<main>
+  <form method="post" action="/page/">
+    {% csrf_token %}
+    <input type="text" name="q">
+  </form>
+</main>
+</body>
+</html>

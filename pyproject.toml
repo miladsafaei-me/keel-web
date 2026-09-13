@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "keel-web"
-version = "0.4.0"
+version = "0.5.0"
 description = "Keel Web — reusable auth foundation, staff-panel shell, and client-panel shell (custom User, single-session, allauth adapters, TailAdmin chrome, persona avatars, image-gen core)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,6 +23,8 @@ dependencies = [
 # Optional: in-place CSS/JS minification in the manifest static storage. The
 # storage backend degrades gracefully (no minify) when these are absent.
 [project.optional-dependencies]
+# Optional: the Font Awesome subset in keel_web.frontend (build_frontend_assets).
+frontend = ["fonttools[woff]>=4.47", "brotli>=1.1"]
 minify = ["rcssmin>=1.1", "rjsmin>=1.2"]
 
 [project.urls]

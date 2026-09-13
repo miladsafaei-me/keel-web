@@ -184,6 +184,46 @@ def home(request):
 - Never stored: a non-200, a streaming or `private`/`no-store` response, and any render
   that produced a CSRF token. Full reasoning in the module docstring.
 
+## Front-end delivery (`keel_web.frontend`)
+
+Four Lighthouse findings come back on every new page unless the shared layer prevents
+them: a stylesheet linked per file (each one a render-blocking round trip), the whole Font
+Awesome stylesheet and three full webfonts for a few dozen icons, `font-display: block` on
+those fonts, and a large PNG drawn in a small box. `keel_web.frontend` removes all four at
+the layer every page already goes through. Install `"keel_web.frontend"` and the
+`keel-web[frontend]` extra (fonttools for the subset).
+
+```python
+KEEL_WEB = {
+    "frontend": {
+        "enabled": BUILT_IN_THIS_IMAGE,          # False: link sources and stock Font Awesome
+        "output_dir": BASE_DIR / "core/static",  # a directory a staticfiles finder serves
+        "bundle_dir": "keel_frontend",
+        "css_bundles": {
+            "site": ["vendor/fonts/inter/inter.css", "keel_frontend/icons/fa-subset.css", "css/base.css"],
+            "home": ["css/pages/home.css"],
+        },
+        "icons": {"css": "vendor/font-awesome/6.4.0/css/all.min.css", "scan_roots": [str(BASE_DIR)]},
+    },
+}
+```
+
+- **`manage.py build_frontend_assets`** runs before `collectstatic` (the image build): it
+  scans `scan_roots` for `fa-*` names, writes a subset stylesheet (unused icon rules gone,
+  faces pointed at subset fonts with `font-display: swap`) and subset WOFF2 files, then
+  concatenates each bundle with relative `url()`s rebased. `--check` only verifies sources.
+- **`{% css_bundle "site" %}`** links the built bundle when `enabled` and the file exists,
+  otherwise every source (the icon subset falls back to the stock stylesheet), so an
+  unbuilt tree always renders.
+- **`{% icon_font_preload %}`** preloads the solid icon font actually in use.
+- **`{% media_img url 48 48 class="logo" alt="" %}`** writes an `<img>` whose `src` is a
+  WebP at the box width and whose `srcset` adds 2x, generated once beside the source under
+  `_v/` with a name that changes when the source does. Non-media, SVG, external and missing
+  files pass through. Serve `_v/` files with `images.cache_control_for(path, default)`.
+
+An icon class assembled at runtime, or stored in database content, is invisible to the
+scan and renders as nothing; keep icon names literal.
+
 ## Deferred CSRF (`keel_web.csrf_defer`)
 
 `AnonymousPageCacheMiddleware` above fixes the *session*-cookie half of edge

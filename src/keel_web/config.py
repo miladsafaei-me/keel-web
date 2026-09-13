@@ -122,7 +122,37 @@ _DEFAULTS = {
         "vary_drop": (),
         "drop_csrf_cookie": False,
     },
+    # keel_web.frontend: CSS bundles, the Font Awesome subset and responsive media
+    # images. See README.md, "Front-end delivery".
+    "frontend": {
+        # Link built bundles and the icon subset. Off: every source is linked on its
+        # own and the stock Font Awesome is used, so an unbuilt tree still renders.
+        "enabled": False,
+        # A directory a staticfiles finder serves; the build writes under it.
+        "output_dir": None,
+        "bundle_dir": "keel_frontend",
+        # Bundle name -> ordered static paths.
+        "css_bundles": {},
+        "icons": {
+            # Static path of the stock Font Awesome stylesheet; None skips the subset.
+            "css": None,
+            # Directories scanned for fa-* tokens, and directory names skipped.
+            "scan_roots": (),
+            "skip_dirs": None,
+        },
+        "media_variants": {"dir": "_v", "quality": 82, "max_age": 31536000},
+    },
 }
+
+
+def frontend_setting(key):
+    """Return ``KEEL_WEB["frontend"][key]``, a nested dict merged over its defaults."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("frontend", {}) or {}
+    default = _DEFAULTS["frontend"][key]
+    value = configured.get(key, default)
+    if isinstance(default, dict) and isinstance(value, dict) and value is not default:
+        return {**default, **value}
+    return value
 
 
 def web_setting(key):

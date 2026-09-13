@@ -34,6 +34,10 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     PostgreSQL row version), with a render lock that serves the previous copy while
     one worker re-renders. The host chooses the slot (who sees the same HTML) and the
     version (release, date); no `KEEL_WEB` key.
+  - `keel_web.frontend` — `build_frontend_assets` (CSS bundles + a Font Awesome subset
+    cut to the icons the source names) and the `keel_frontend` tags `{% css_bundle %}`,
+    `{% icon_font_preload %}` and `{% media_img %}` (WebP 1x/2x variants of media images).
+    Configured by `KEEL_WEB["frontend"]`; off, it links sources and stock assets unchanged.
   - `keel_web.csrf_defer` — the deferred-CSRF token endpoint + JS helper: lets
     a page with an incidental form (newsletter, header search) ship with no
     CSRF cookie at all, so it stays eligible for the edge caching above. No

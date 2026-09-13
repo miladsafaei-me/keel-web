@@ -18,10 +18,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "keel_web.csrf_defer",
+    "keel_web.frontend",
     "tests.hostapp",
 ]
 
 STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
 
 MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",

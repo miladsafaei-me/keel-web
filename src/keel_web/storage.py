@@ -82,6 +82,21 @@ class KeelManifestStaticFilesStorage(CompressedManifestStaticFilesStorage):
     # via Last-Modified / ETag.
     manifest_strict = False
 
+    def stored_name(self, name):
+        """The hashed name, or the plain one for a file that was never collected.
+
+        ``manifest_strict = False`` alone does not deliver that: for a name missing
+        from the manifest Django computes a hash from the file itself, and raises
+        ``ValueError`` when the file is not on disk either. So one template line
+        pointing at a stylesheet a package stopped shipping turned the whole page
+        into a 500. The plain URL 404s for that one asset, which is what plain
+        static storage did, and the page renders.
+        """
+        try:
+            return super().stored_name(name)
+        except ValueError:
+            return name
+
     def _save(self, name, content):
         """Minify CSS/JS at write time so the bytes Django then content-hashes
         are already the smallest form. ManifestStaticFilesStorage derives both

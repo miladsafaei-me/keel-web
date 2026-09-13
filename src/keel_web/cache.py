@@ -73,7 +73,11 @@ unaccessed session and skips the save, the ``Set-Cookie``, and the
      Dropping the cookie on a page with a real POST form would break that form,
      so the honest default is off; the better fix is usually to stop rendering
      the token on pages that never post, not to strip the cookie here.
-  4. ``Cache-Control: public, max-age=<browser_max_age>, s-maxage=<edge_max_age>``.
+  4. ``Cache-Control: public, max-age=<browser_max_age>, s-maxage=<edge_max_age>``,
+     plus ``stale-while-revalidate=<stale_while_revalidate>`` when that key is
+     set. With it an edge keeps answering from its copy while it fetches the
+     next one in the background, so a short ``edge_max_age`` (fresh data) no
+     longer costs a visitor a trip to the origin every time it lapses.
 
 **Configuration** — ``KEEL_WEB["anonymous_page_cache"]``, all keys optional (see
 ``keel_web/config.py`` for the full table and defaults). Off by default
@@ -169,6 +173,12 @@ class AnonymousPageCacheMiddleware:
             # rule above exists to prevent.
             return
 
-        browser_max_age = anonymous_page_cache_setting("browser_max_age")
-        edge_max_age = anonymous_page_cache_setting("edge_max_age")
-        response["Cache-Control"] = f"public, max-age={browser_max_age}, s-maxage={edge_max_age}"
+        directives = [
+            "public",
+            f"max-age={anonymous_page_cache_setting('browser_max_age')}",
+            f"s-maxage={anonymous_page_cache_setting('edge_max_age')}",
+        ]
+        stale_while_revalidate = anonymous_page_cache_setting("stale_while_revalidate")
+        if stale_while_revalidate:
+            directives.append(f"stale-while-revalidate={stale_while_revalidate}")
+        response["Cache-Control"] = ", ".join(directives)

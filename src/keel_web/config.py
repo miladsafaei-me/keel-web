@@ -67,6 +67,9 @@ domain-neutral.
             "exempt_prefixes": ("/admin", "/accounts", "/client"),
             "browser_max_age": 300,   # Cache-Control max-age (seconds)
             "edge_max_age": 3600,     # Cache-Control s-maxage (seconds)
+            # Cache-Control stale-while-revalidate (seconds), or None to omit it.
+            # Lets an edge serve its copy while it refetches in the background.
+            "stale_while_revalidate": None,
             # Vary header field names to strip, e.g. ("Accept-Language",) on a
             # site that serves exactly one language from every URL. Opt-in
             # only — never drop a field a site's URLs genuinely vary on.
@@ -115,6 +118,7 @@ _DEFAULTS = {
         "exempt_prefixes": ("/admin", "/accounts", "/client"),
         "browser_max_age": 300,
         "edge_max_age": 3600,
+        "stale_while_revalidate": None,
         "vary_drop": (),
         "drop_csrf_cookie": False,
     },

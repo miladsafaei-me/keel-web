@@ -29,6 +29,11 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     of a public page edge-cacheable (no `Set-Cookie`, no uncacheable `Vary`,
     a `Cache-Control` header) without touching any other request. Off by
     default (`KEEL_WEB["anonymous_page_cache"]["enabled"]`).
+  - `keel_web.page_cache` — `cached_page` + `data_fingerprint`: serves an expensive
+    page from the Django cache until a row of the tables it reads is written (by
+    PostgreSQL row version), with a render lock that serves the previous copy while
+    one worker re-renders. The host chooses the slot (who sees the same HTML) and the
+    version (release, date); no `KEEL_WEB` key.
   - `keel_web.csrf_defer` — the deferred-CSRF token endpoint + JS helper: lets
     a page with an incidental form (newsletter, header search) ship with no
     CSRF cookie at all, so it stays eligible for the edge caching above. No

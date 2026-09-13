@@ -68,6 +68,9 @@ original reached into them, there is now a config hook.
     `INSTALLED_APPS` and `path("", include("keel_web.csrf_defer.urls"))` to the
     root URLconf. See
     [Deferred CSRF](#deferred-csrf-keel_webcsrf_defer) below.
+11. Optional: for a public page that takes seconds to build from data that changes
+    rarely, call `keel_web.page_cache.cached_page` from its view. No settings key;
+    see [Page cache](#page-cache-keel_webpage_cache) below.
 
 ## Config-contract / override seams (`KEEL_WEB`)
 
@@ -120,6 +123,7 @@ KEEL_WEB = {
         "exempt_prefixes": ("/admin", "/accounts", "/client"),  # add your own (forum, etc.)
         "browser_max_age": 300,
         "edge_max_age": 3600,
+        "stale_while_revalidate": None,  # e.g. 86400 beside a short edge_max_age
         "vary_drop": (),            # e.g. ("Accept-Language",) on a single-language site
         "drop_csrf_cookie": False,  # leave off unless a page's only cookie is a CSRF token no form needs
     },
@@ -132,6 +136,7 @@ KEEL_WEB = {
 | `exempt_prefixes` | `("/admin", "/accounts", "/client")` | Path prefixes left completely untouched. Extend, don't replace, for a host's own session-requiring areas (forum, checkout, …). |
 | `browser_max_age` | `300` | `Cache-Control: max-age=` (seconds), the browser-cache lifetime. |
 | `edge_max_age` | `3600` | `Cache-Control: s-maxage=` (seconds), the shared/edge-cache lifetime. |
+| `stale_while_revalidate` | `None` | `Cache-Control: stale-while-revalidate=` (seconds), omitted when unset. An edge that honours it keeps answering from its copy while it refetches in the background, so a short `edge_max_age` stops costing visitors an origin round trip each time it lapses. |
 | `vary_drop` | `()` | `Vary` field names to strip (case-insensitive), e.g. `("Accept-Language",)` on a site serving one language from every URL. Opt-in per field — never drop one a site's URLs genuinely vary on. |
 | `drop_csrf_cookie` | `False` | Strip a CSRF cookie from an otherwise-eligible response. Off by default because a page with a real POST form needs that cookie; the better fix for a page that only renders `{% csrf_token %}` in a GET-only form is usually to stop rendering the token there. |
 
@@ -139,6 +144,45 @@ Even with every key configured, a response that still carries any
 `Set-Cookie` after the session no-op and the optional CSRF-cookie drop is
 never marked cacheable — serving one visitor's cookie to another is the one
 failure this middleware exists to prevent, so that check cannot be turned off.
+
+## Page cache (`keel_web.page_cache`)
+
+The middleware above lets an edge keep a page; this keeps the origin from rebuilding
+one. A view whose page takes seconds of Python — a ranked board, a homepage that
+reads a whole roster — hands its render to `cached_page`, which serves a stored copy
+until the data behind it changes:
+
+```python
+from datetime import date
+
+from keel_web.page_cache import cached_page, data_fingerprint
+
+
+def home(request):
+    viewer = "staff" if request.user.is_staff else "public"
+    return cached_page(
+        request,
+        slot=f"home:{viewer}:{request.scheme}://{request.get_host()}",
+        version=f"{settings.RELEASE_VERSION}:{date.today()}:{data_fingerprint(Firm, Landing)}",
+        render=lambda: render(request, "home.html", build_context()),
+    )
+```
+
+- **`data_fingerprint(*models)`** digests every row version of those tables. On
+  PostgreSQL it reads `xmin` and `ctid`, so it moves on every write path —
+  `save(update_fields=...)` that skips `updated_at`, `QuerySet.update()`, raw SQL — in
+  well under a millisecond. Other databases fall back to count and highest primary key,
+  which misses updates.
+- **`slot`** separates renders that differ. Everything about the viewer that changes the
+  HTML belongs in it; nothing else is read. Render query-string requests directly
+  rather than keying on the string.
+- **`version`** is everything that invalidates: the fingerprint, the release, the date
+  when the page prints one.
+- A stale copy is served (`X-Keel-Page-Cache: stale`) while one worker renders the new
+  one, so a data change costs one render rather than one per concurrent request. A stored
+  page keeps a gzip copy, so a hit is not recompressed.
+- Never stored: a non-200, a streaming or `private`/`no-store` response, and any render
+  that produced a CSRF token. Full reasoning in the module docstring.
 
 ## Deferred CSRF (`keel_web.csrf_defer`)
 

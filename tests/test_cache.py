@@ -117,6 +117,22 @@ class AnonymousPageCacheMiddlewareTests(TestCase):
             response["Cache-Control"], "public, max-age=300, s-maxage=3600"
         )
 
+    def test_stale_while_revalidate_is_appended_when_configured(self):
+        overridden = {
+            "anonymous_page_cache": {
+                **settings.KEEL_WEB["anonymous_page_cache"],
+                "browser_max_age": 0,
+                "edge_max_age": 300,
+                "stale_while_revalidate": 86400,
+            }
+        }
+        with override_settings(KEEL_WEB=overridden):
+            response = self.client.get("/page/")
+        self.assertEqual(
+            response["Cache-Control"],
+            "public, max-age=0, s-maxage=300, stale-while-revalidate=86400",
+        )
+
     def test_disabled_middleware_is_a_full_noop(self):
         overridden = {
             "anonymous_page_cache": {

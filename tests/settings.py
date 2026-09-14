@@ -26,6 +26,7 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 
 MIDDLEWARE = [
+    "keel_web.api_guard.ApiGuardMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "keel_web.cache.AnonymousPageCacheMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -71,5 +72,12 @@ KEEL_WEB = {
         "edge_max_age": 3600,
         "vary_drop": (),
         "drop_csrf_cookie": False,
+    },
+    "api_guard": {
+        "enabled": True,
+        "prefixes": ("/api/",),
+        "trusted_origins": ("https://partner.example",),
+        "access_tokens": ("granted-token",),
+        "robots": "noindex",
     },
 }

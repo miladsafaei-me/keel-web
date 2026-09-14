@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render
 
 
@@ -31,3 +31,7 @@ def vary_page(request):
 
 def broken(request):
     return HttpResponseServerError("boom")
+
+
+def api_ping(request):
+    return JsonResponse({"ok": True})

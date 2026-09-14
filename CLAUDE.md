@@ -44,6 +44,10 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     `KEEL_WEB` key — the URL is fixed by design. See `keel_web/csrf_defer/views.py`
     module docstring for the mechanism and the trade-off, and README's
     "Deferred CSRF" section for the wiring recipe.
+  - `keel_web.api_guard.ApiGuardMiddleware` — keeps `/api/` endpoints to the site's own
+    pages: answers a same-origin browser fetch, a trusted origin or a bearer token,
+    refuses the rest with a 403, and marks every guarded response `noindex` and
+    `private, no-store`. Off by default (`KEEL_WEB["api_guard"]`).
 - **Stays in the host (Bucket-0):** coupon/purchase/lead models + `record_web_lead`
   (wired via `KEEL_WEB["signup_lead_hook"]`), the concrete `CLIENT_NAV` (wired via
   `KEEL_WEB["client_nav"]`), all trading/signals/affiliate/onboarding pages + views,

@@ -87,6 +87,7 @@ original reached into them, there is now a config hook.
 | `static_skip_hash_prefixes` / `static_minify_skip_substrings` | Tailwind-safe defaults | storage tuning |
 | `image_gen.*_hook` | env defaults | API key / endpoint / aspect / system-instruction resolvers |
 | `anonymous_page_cache.*` | off (see below) | edge-cacheability for anonymous public GET/HEAD — see [Anonymous page caching](#anonymous-page-caching-keel_webcache) |
+| `api_guard.*` | off (see below) | keep `/api/` endpoints to the site's own pages — see [API guard](#api-guard-keel_webapi_guard) |
 
 Templates expose blocks for the rest: `panel_logo`, `panel_banner`,
 `brand_suffix`, `favicon`, `head_extra`, plus the client `admin_home_url` context
@@ -278,6 +279,48 @@ Wiring — the exact same recipe on every consumer:
 No `KEEL_WEB` settings key exists for this feature — the endpoint path is
 fixed on purpose so every consumer agrees with the JS helper without any
 per-host configuration.
+
+## API guard (`keel_web.api_guard`)
+
+An endpoint a page fetches — a JSON list, an HTML fragment behind a filter — is a URL
+like any other: a crawler can index it, an edge cache can store one caller's answer and
+hand it to the next, and a script can pull the whole dataset behind it without loading a
+page. `ApiGuardMiddleware` answers a request under a guarded prefix only when it comes
+from the site's own pages (`Sec-Fetch-Site: same-origin`, or an `Origin`/`Referer` on this
+host), from a configured trusted origin, or with a configured bearer token, and refuses the
+rest with a 403. Every guarded response, answered or refused, carries
+`X-Robots-Tag: noindex` and `Cache-Control: private, no-store`.
+
+Browser headers keep other sites' pages out; they do not stop a program that copies them.
+Only a token is a grant. Full mechanism: the `keel_web/api_guard.py` module docstring.
+
+Wiring:
+
+```python
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "keel_web.api_guard.ApiGuardMiddleware",  # above anything that writes Cache-Control
+    ...,
+]
+
+KEEL_WEB = {
+    "api_guard": {
+        "enabled": True,
+        "prefixes": ("/api/",),
+        "trusted_origins": (),  # e.g. ("https://partner.example",)
+        "access_tokens": tuple(t for t in os.environ.get("API_ACCESS_TOKENS", "").split(",") if t),
+        "robots": "noindex",
+    },
+}
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | `False` | Master switch; upgrading the package changes nothing until a host turns it on. |
+| `prefixes` | `("/api/",)` | Path prefixes the guard covers. |
+| `trusted_origins` | `()` | Origins (`scheme://host`) whose pages may call a guarded endpoint from a browser. |
+| `access_tokens` | `()` | Bearer tokens (`Authorization: Bearer <token>`) that grant any caller access. |
+| `robots` | `"noindex"` | The `X-Robots-Tag` value on every guarded response. |
 
 ## Status
 

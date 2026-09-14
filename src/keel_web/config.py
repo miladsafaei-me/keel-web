@@ -81,6 +81,21 @@ domain-neutral.
             # rendering the token there, not to strip the cookie here.
             "drop_csrf_cookie": False,
         },
+        # Keep /api/ endpoints to the site's own pages; see keel_web/api_guard.py.
+        # Off by default.
+        "api_guard": {
+            "enabled": False,
+            # Path prefixes the guard covers.
+            "prefixes": ("/api/",),
+            # Origins, e.g. ("https://partner.example",), whose pages may call a
+            # guarded endpoint from a browser.
+            "trusted_origins": (),
+            # Bearer tokens that grant any caller access. Read them from the
+            # environment; never commit one.
+            "access_tokens": (),
+            # The X-Robots-Tag value every guarded response carries.
+            "robots": "noindex",
+        },
     }
 """
 from __future__ import annotations
@@ -121,6 +136,13 @@ _DEFAULTS = {
         "stale_while_revalidate": None,
         "vary_drop": (),
         "drop_csrf_cookie": False,
+    },
+    "api_guard": {
+        "enabled": False,
+        "prefixes": ("/api/",),
+        "trusted_origins": (),
+        "access_tokens": (),
+        "robots": "noindex",
     },
     # keel_web.frontend: CSS bundles, the Font Awesome subset and responsive media
     # images. See README.md, "Front-end delivery".
@@ -170,6 +192,12 @@ def anonymous_page_cache_setting(key):
     """Return ``KEEL_WEB["anonymous_page_cache"][key]`` or its package default."""
     configured = getattr(settings, "KEEL_WEB", {}).get("anonymous_page_cache", {}) or {}
     return configured.get(key, _DEFAULTS["anonymous_page_cache"][key])
+
+
+def api_guard_setting(key):
+    """Return ``KEEL_WEB["api_guard"][key]`` or its package default."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("api_guard", {}) or {}
+    return configured.get(key, _DEFAULTS["api_guard"][key])
 
 
 def call_hook(dotted, *args, default=None, **kwargs):

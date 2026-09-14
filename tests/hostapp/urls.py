@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("page/", views.public_page, name="page"),
+    path("api/ping/", views.api_ping, name="api_ping"),
     path("form-page/", views.form_page, name="form_page"),
     path("no-store/", views.explicit_no_store, name="no_store"),
     path("vary-page/", views.vary_page, name="vary_page"),

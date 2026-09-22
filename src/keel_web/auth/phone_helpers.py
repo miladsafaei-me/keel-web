@@ -100,7 +100,7 @@ def normalize_to_e164(region: str, national_digits: str) -> str:
     if region not in phonenumbers.SUPPORTED_REGIONS:
         raise ValidationError("Unsupported country.")
     if not national_digits.isdigit():
-        raise ValidationError("Enter digits only — no spaces or symbols.")
+        raise ValidationError("Enter digits only, no spaces or symbols.")
     try:
         parsed = phonenumbers.parse(national_digits, region)
     except NumberParseException:

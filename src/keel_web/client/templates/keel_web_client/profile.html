@@ -68,43 +68,43 @@
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">First Name</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.first_name|default:"—" }}
+          {{ request.user.first_name|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">Last Name</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.last_name|default:"—" }}
+          {{ request.user.last_name|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">Country</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.country_name|default:"—" }}
+          {{ request.user.country_name|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">Phone</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.phone|default:"—" }}
+          {{ request.user.phone|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">Telegram ID</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90 break-all">
-          {{ request.user.telegram_id|default:"—" }}
+          {{ request.user.telegram_id|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">WhatsApp</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.whatsapp_phone|default:"—" }}
+          {{ request.user.whatsapp_phone|default:"-" }}
         </p>
       </div>
       <div>
         <p class="mb-1 text-xs leading-normal text-gray-500 dark:text-gray-400">Viber</p>
         <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ request.user.viber_phone|default:"—" }}
+          {{ request.user.viber_phone|default:"-" }}
         </p>
       </div>
     </div>

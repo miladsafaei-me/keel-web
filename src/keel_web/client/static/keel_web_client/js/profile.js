@@ -66,7 +66,7 @@
         msg = customMessage;
       } else if (country && country.sample_digits) {
         msg = "For " + country.name +
-              ", enter " + country.sample_digits.length + " digits — example: " +
+              ", enter " + country.sample_digits.length + " digits. Example: " +
               country.dial + " " + country.sample_national + ".";
       } else if (country) {
         msg = "Enter a valid phone number for " + country.name + ".";

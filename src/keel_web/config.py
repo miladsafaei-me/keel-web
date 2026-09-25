@@ -96,12 +96,51 @@ domain-neutral.
             # The X-Robots-Tag value every guarded response carries.
             "robots": "noindex",
         },
+        # Answer 451 to visitors from countries the site does not serve; see
+        # keel_web/geo_block.py. Off by default.
+        "geo_block": {
+            "enabled": False,
+            # ISO 3166-1 alpha-2 codes to refuse.
+            "countries": (),
+            # META key of the header naming the visitor's country, and of the
+            # one carrying the visitor's IP (Cloudflare's, by default).
+            "country_header": "HTTP_CF_IPCOUNTRY",
+            "client_ip_header": "HTTP_CF_CONNECTING_IP",
+            # Path prefixes answered from any country (plain startswith).
+            "exempt_prefixes": ("/admin", "/accounts"),
+            # Signed-in staff are served from any country.
+            "exempt_staff": True,
+            # Search-engine crawlers proven by reverse-then-forward DNS are served.
+            "exempt_verified_crawlers": True,
+            # (user-agent token, (DNS domain, ...)) pairs; lower-case tokens.
+            "verified_crawlers": DEFAULT_VERIFIED_CRAWLERS,
+            # True only when the same countries are also blocked at the edge;
+            # otherwise every let-through response is kept out of shared caches.
+            "shared_cache": False,
+            # Browser max-age given to a response that had no Cache-Control.
+            "browser_max_age": 0,
+            # Template for the 451 page (context: country_code); None uses a
+            # minimal built-in page.
+            "template": None,
+        },
     }
 """
 from __future__ import annotations
 
 from django.conf import settings
 from django.utils.module_loading import import_string
+
+# Crawlers whose own documentation says to verify them by reverse DNS on these domains.
+DEFAULT_VERIFIED_CRAWLERS = (
+    ("googlebot", ("googlebot.com", "google.com")),
+    ("google-inspectiontool", ("googlebot.com", "google.com")),
+    ("googleother", ("googlebot.com", "google.com")),
+    ("bingbot", ("search.msn.com",)),
+    ("msnbot", ("search.msn.com",)),
+    ("applebot", ("applebot.apple.com",)),
+    ("yandex", ("yandex.ru", "yandex.net", "yandex.com")),
+    ("baiduspider", ("baidu.com", "baidu.jp")),
+)
 
 _DEFAULTS = {
     "content_editor_group": "Content Editor",
@@ -143,6 +182,19 @@ _DEFAULTS = {
         "trusted_origins": (),
         "access_tokens": (),
         "robots": "noindex",
+    },
+    "geo_block": {
+        "enabled": False,
+        "countries": (),
+        "country_header": "HTTP_CF_IPCOUNTRY",
+        "client_ip_header": "HTTP_CF_CONNECTING_IP",
+        "exempt_prefixes": ("/admin", "/accounts"),
+        "exempt_staff": True,
+        "exempt_verified_crawlers": True,
+        "verified_crawlers": DEFAULT_VERIFIED_CRAWLERS,
+        "shared_cache": False,
+        "browser_max_age": 0,
+        "template": None,
     },
     # keel_web.frontend: CSS bundles, the Font Awesome subset and responsive media
     # images. See README.md, "Front-end delivery".
@@ -198,6 +250,12 @@ def api_guard_setting(key):
     """Return ``KEEL_WEB["api_guard"][key]`` or its package default."""
     configured = getattr(settings, "KEEL_WEB", {}).get("api_guard", {}) or {}
     return configured.get(key, _DEFAULTS["api_guard"][key])
+
+
+def geo_block_setting(key):
+    """Return ``KEEL_WEB["geo_block"][key]`` or its package default."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("geo_block", {}) or {}
+    return configured.get(key, _DEFAULTS["geo_block"][key])
 
 
 def call_hook(dotted, *args, default=None, **kwargs):

@@ -88,6 +88,7 @@ original reached into them, there is now a config hook.
 | `image_gen.*_hook` | env defaults | API key / endpoint / aspect / system-instruction resolvers |
 | `anonymous_page_cache.*` | off (see below) | edge-cacheability for anonymous public GET/HEAD — see [Anonymous page caching](#anonymous-page-caching-keel_webcache) |
 | `api_guard.*` | off (see below) | keep `/api/` endpoints to the site's own pages — see [API guard](#api-guard-keel_webapi_guard) |
+| `geo_block.*` | off (see below) | answer 451 to visitors from countries the site does not serve — see [Geo block](#geo-block-keel_webgeo_block) |
 
 Templates expose blocks for the rest: `panel_logo`, `panel_banner`,
 `brand_suffix`, `favicon`, `head_extra`, plus the client `admin_home_url` context
@@ -321,6 +322,62 @@ KEEL_WEB = {
 | `trusted_origins` | `()` | Origins (`scheme://host`) whose pages may call a guarded endpoint from a browser. |
 | `access_tokens` | `()` | Bearer tokens (`Authorization: Bearer <token>`) that grant any caller access. |
 | `robots` | `"noindex"` | The `X-Robots-Tag` value on every guarded response. |
+
+## Geo block (`keel_web.geo_block`)
+
+Some sites may not lawfully address readers in some countries. `GeoBlockMiddleware`
+answers a request whose `CF-IPCountry` header names a configured country with
+`451 Unavailable For Legal Reasons` (`Cache-Control: private, no-store`,
+`X-Robots-Tag: noindex`). It lets through a request with no country header (health
+checks, local development), a path under `exempt_prefixes` (the site's own admin and
+login), signed-in staff, and a search-engine crawler whose IP proves it by reverse DNS on
+the crawler's published domain followed by a forward lookup back to the same IP. A
+crawler user agent on its own proves nothing and is refused.
+
+**An edge cache that does not key on country would serve a stored page to a blocked
+visitor without asking the origin.** So, unless `shared_cache` is set, every response the
+middleware lets through leaves as `private`, which also keeps
+`AnonymousPageCacheMiddleware` from marking it `public`. Set `shared_cache` only when the
+same countries are blocked at the edge as well. A VPN defeats any country check; the
+block shows the site does not serve those countries, and the content has to show it too.
+Full mechanism: the `keel_web/geo_block.py` module docstring.
+
+Wiring:
+
+```python
+MIDDLEWARE = [
+    ...,
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "keel_web.cache.AnonymousPageCacheMiddleware",
+    ...,
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "keel_web.geo_block.GeoBlockMiddleware",  # after auth: reads request.user
+    ...,
+]
+
+KEEL_WEB = {
+    "geo_block": {
+        "enabled": True,
+        "countries": ("TR", "IN"),
+        "exempt_prefixes": ("/admin", "/accounts"),
+        "template": "core/geo_blocked.html",
+    },
+}
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | `False` | Master switch; upgrading the package changes nothing until a host turns it on. |
+| `countries` | `()` | ISO 3166-1 alpha-2 codes to refuse, matched case-insensitively. |
+| `country_header` | `"HTTP_CF_IPCOUNTRY"` | `request.META` key naming the visitor's country. |
+| `client_ip_header` | `"HTTP_CF_CONNECTING_IP"` | `request.META` key carrying the visitor's IP, for crawler verification. |
+| `exempt_prefixes` | `("/admin", "/accounts")` | Path prefixes served from any country (plain `startswith`). |
+| `exempt_staff` | `True` | Serve signed-in staff from any country. |
+| `exempt_verified_crawlers` | `True` | Serve DNS-verified search-engine crawlers. |
+| `verified_crawlers` | Google, Bing, Apple, Yandex, Baidu | `(user-agent token, (domain, ...))` pairs. |
+| `shared_cache` | `False` | Leave `public`/`s-maxage` alone, for a site that also blocks at the edge. |
+| `browser_max_age` | `0` | `max-age` given to a let-through response that had no `Cache-Control`. |
+| `template` | `None` | Template for the 451 page (context: `country_code`); `None` renders a minimal page. |
 
 ## Status
 

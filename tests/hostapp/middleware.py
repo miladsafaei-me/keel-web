@@ -21,6 +21,11 @@ class _FakeAuthenticatedUser:
     is_authenticated = True
 
 
+class _FakeStaffUser:
+    is_authenticated = True
+    is_staff = True
+
+
 class SessionWriterMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -37,4 +42,16 @@ class FakeTokenAuthMiddleware:
     def __call__(self, request):
         if request.META.get("HTTP_X_FAKE_TOKEN_AUTH"):
             request.user = _FakeAuthenticatedUser()
+        return self.get_response(request)
+
+
+class FakeStaffMiddleware:
+    """Signs the request in as staff when it carries ``X-Fake-Staff`` (geo_block tests)."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.META.get("HTTP_X_FAKE_STAFF"):
+            request.user = _FakeStaffUser()
         return self.get_response(request)

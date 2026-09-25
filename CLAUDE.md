@@ -48,6 +48,11 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     pages: answers a same-origin browser fetch, a trusted origin or a bearer token,
     refuses the rest with a 403, and marks every guarded response `noindex` and
     `private, no-store`. Off by default (`KEEL_WEB["api_guard"]`).
+  - `keel_web.geo_block.GeoBlockMiddleware` — answers 451 to a visitor whose
+    `CF-IPCountry` names a configured country, serving admin/login prefixes, signed-in
+    staff and DNS-verified search-engine crawlers from anywhere, and keeping every
+    let-through response out of shared caches unless the edge blocks too. Off by default
+    (`KEEL_WEB["geo_block"]`).
 - **Stays in the host (Bucket-0):** coupon/purchase/lead models + `record_web_lead`
   (wired via `KEEL_WEB["signup_lead_hook"]`), the concrete `CLIENT_NAV` (wired via
   `KEEL_WEB["client_nav"]`), all trading/signals/affiliate/onboarding pages + views,

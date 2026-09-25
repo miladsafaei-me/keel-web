@@ -31,6 +31,8 @@ MIDDLEWARE = [
     "keel_web.cache.AnonymousPageCacheMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "tests.hostapp.middleware.FakeTokenAuthMiddleware",
+    "tests.hostapp.middleware.FakeStaffMiddleware",
+    "keel_web.geo_block.GeoBlockMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     # Stands in for whatever host-specific middleware unconditionally writes to
     # the session on every request (django-machina's ForumPermissionMiddleware

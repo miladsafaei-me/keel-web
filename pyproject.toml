@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "keel-web"
-version = "0.6.1"
+version = "0.7.0"
 description = "Keel Web — reusable auth foundation, staff-panel shell, and client-panel shell (custom User, single-session, allauth adapters, TailAdmin chrome, persona avatars, image-gen core)."
 readme = "README.md"
 requires-python = ">=3.10"

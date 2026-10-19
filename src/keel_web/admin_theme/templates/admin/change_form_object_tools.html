@@ -1,0 +1,10 @@
+{% load i18n admin_urls keel_icons %}
+{% block object-tools-items %}
+<li>
+  {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+  <a href="{% add_preserved_filters history_url %}" class="kat-btn kat-btn--outline historylink">{% icon "history" class="kat-icon kat-icon--sm" %}{% translate "History" %}</a>
+</li>
+{% if has_absolute_url %}
+<li><a href="{{ absolute_url }}" class="kat-btn kat-btn--outline viewsitelink">{% icon "external-link" class="kat-icon kat-icon--sm" %}{% translate "View on site" %}</a></li>
+{% endif %}
+{% endblock %}

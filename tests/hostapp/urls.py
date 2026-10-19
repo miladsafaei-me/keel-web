@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import include, path
 
 from . import views
@@ -11,6 +12,7 @@ urlpatterns = [
     path("broken/", views.broken, name="broken"),
     # Exempt-prefix probe -- same view, path under the default "/admin" prefix.
     path("admin/dashboard/", views.public_page, name="admin_dashboard"),
+    path("staff-admin/", admin.site.urls),
     path("csrf-check/", views.csrf_check, name="csrf_check"),
     path("", include("keel_web.csrf_defer.urls")),
 ]

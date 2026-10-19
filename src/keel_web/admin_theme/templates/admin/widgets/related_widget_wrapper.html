@@ -1,0 +1,41 @@
+{% load i18n keel_icons %}
+<div class="related-widget-wrapper kat-related" {% if not model_has_limit_choices_to %}data-model-ref="{{ model_name }}"{% endif %}>
+    {{ rendered_widget }}
+    {% block links %}
+        {% spaceless %}
+        {% if not is_hidden %}
+        {% if can_change_related %}
+        <a class="kat-icon-btn kat-icon-btn--sm related-widget-wrapper-link change-related" id="change_id_{{ name }}"
+            data-href-template="{{ change_related_template_url }}?{{ url_params }}"
+            data-popup="yes"
+            title="{% blocktranslate %}Change selected {{ model }}{% endblocktranslate %}">
+            {% icon "pencil" class="kat-icon kat-icon--sm" %}<span class="visually-hidden">{% blocktranslate %}Change selected {{ model }}{% endblocktranslate %}</span>
+        </a>
+        {% endif %}
+        {% if can_add_related %}
+        <a class="kat-icon-btn kat-icon-btn--sm related-widget-wrapper-link add-related" id="add_id_{{ name }}"
+            data-popup="yes"
+            href="{{ add_related_url }}?{{ url_params }}"
+            title="{% blocktranslate %}Add another {{ model }}{% endblocktranslate %}">
+            {% icon "plus" class="kat-icon kat-icon--sm" %}<span class="visually-hidden">{% blocktranslate %}Add another {{ model }}{% endblocktranslate %}</span>
+        </a>
+        {% endif %}
+        {% if can_delete_related %}
+        <a class="kat-icon-btn kat-icon-btn--sm related-widget-wrapper-link delete-related" id="delete_id_{{ name }}"
+            data-href-template="{{ delete_related_template_url }}?{{ url_params }}"
+            data-popup="yes"
+            title="{% blocktranslate %}Delete selected {{ model }}{% endblocktranslate %}">
+            {% icon "trash" class="kat-icon kat-icon--sm" %}<span class="visually-hidden">{% blocktranslate %}Delete selected {{ model }}{% endblocktranslate %}</span>
+        </a>
+        {% endif %}
+        {% if can_view_related %}
+          <a class="kat-icon-btn kat-icon-btn--sm related-widget-wrapper-link view-related" id="view_id_{{ name }}"
+             data-href-template="{{ change_related_template_url }}?{{ view_related_url_params }}"
+             title="{% blocktranslate %}View selected {{ model }}{% endblocktranslate %}">
+            {% icon "eye" class="kat-icon kat-icon--sm" %}<span class="visually-hidden">{% blocktranslate %}View selected {{ model }}{% endblocktranslate %}</span>
+          </a>
+        {% endif %}
+        {% endif %}
+        {% endspaceless %}
+    {% endblock %}
+</div>

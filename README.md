@@ -14,6 +14,7 @@ the platform model, and this repo's [`CLAUDE.md`](CLAUDE.md) for the contract.
 |---|---|---|
 | `keel_web_auth` | `keel_web.auth` | Custom `User` foundation (`AbstractKeelUser` + a concrete swappable `User`), `SingleSessionMiddleware` + login signal, allauth `Account`/`SocialAccount` adapters, branded transactional email helpers, the `account_status` context processor, the persona-avatar catalogue, phone parsing/validation, the four account-settings forms, and the shared `{% load keel_icons %}` inline-SVG icon set. |
 | `keel_web_admin` | `keel_web.admin_shell` | TailAdmin staff-panel chrome (`base_admin.html`, `_sidebar`, `_navbar`, the 3-tab content editor partials), permission mixins, the generic nav active-state resolver, the Gemini image-generation HTTP core, and the Pillow→WebP image-upload helper. |
+| `keel_web_admin_theme` | `keel_web.admin_theme` | The stock Django admin in the staff-panel look: every admin and registration template, the theme CSS/JS, the boolean icons. Standalone (no Unfold, no Tailwind). See "Admin theme". |
 | `keel_web_client` | `keel_web.client` | Client-panel shell (`base_client.html` + partials, profile/settings + persona builder, billing stub, resend-verification), the `NavItem`/`NavSection` dataclasses + nav resolver, the `client_extras` template tags, and the shared TailAdmin CSS/JS bundle. |
 
 `keel_web.storage.KeelManifestStaticFilesStorage` (manifest static + in-place
@@ -378,6 +379,48 @@ KEEL_WEB = {
 | `shared_cache` | `False` | Leave `public`/`s-maxage` alone, for a site that also blocks at the edge. |
 | `browser_max_age` | `0` | `max-age` given to a let-through response that had no `Cache-Control`. |
 | `template` | `None` | Template for the 451 page (context: `country_code`); `None` renders a minimal page. |
+
+## Admin theme (`keel_web.admin_theme`)
+
+The stock Django admin, drawn in the staff-panel look: a dark sidebar built from the
+admin's own app list, a top bar with the light/dark switch and the user menu, cards on
+a grey ground, a toolbar with search and a filter drawer above every list, a two-column
+change form with a sticky save card, and a split-screen sign-in page. It needs no
+Unfold, no Tailwind and no `keel_web.client`; Django's own admin stylesheets are never
+loaded.
+
+Every page is covered: login and logout, the dashboard and app index, change lists
+(search, date drill-down, filters, actions, list-editable rows, pagination, sorting),
+change forms (fieldsets, collapsible fieldsets, tabular and stacked inlines, related
+links, date/time pickers, the two-list picker, autocomplete, file fields), delete and
+bulk-delete confirmations, object history, the password pages and the 404/500 pages.
+Django's admin JavaScript keeps working because the overrides keep its markup hooks.
+
+Wire it:
+
+1. Put `"keel_web.admin_theme"` **before** `"django.contrib.admin"` in
+   `INSTALLED_APPS` (system check `keel_web_admin_theme.E001` enforces it). Its
+   `admin/` and `registration/` templates and its `admin/img/icon-yes|no|unknown.svg`
+   then win over Django's.
+2. Optionally set `KEEL_WEB["admin_theme"]`:
+
+| Key | Default | Host provides |
+|---|---|---|
+| `brand_name` | `admin.site.site_header` | Name in the sidebar, sign-in page and tab title. |
+| `tagline` | `""` | One line under the name. |
+| `logo` / `logo_round` | `None` / `False` | Static path of the mark; round for a portrait. Initials when unset. |
+| `favicon` | `None` | Static path of the tab icon. |
+| `stylesheets` | `()` | Host CSS loaded after the theme: fonts and `--kat-*` token overrides (brand ramp, families). |
+| `model_icons` | auth defaults | `{"app_label.model_name" or "app_label": keel_icons name}`. |
+| `nav_links` | `()` | Extra sidebar links: `({"label", "url", "icon"}, ...)`; `url` is a path or URL name. |
+| `login_title` / `login_text` | `Sign in` / one line | Copy of the sign-in page. |
+| `default_theme` | `"auto"` | First-visit theme: `auto`, `light` or `dark`. The visitor's choice is kept per browser. |
+
+Restyling is done with tokens only: every colour, size and space in
+`keel_web_admin_theme/css/admin-theme.css` is a `--kat-*` custom property on `:root`
+(with a `[data-theme="dark"]` block), so a host's stylesheet redefines the brand ramp
+`--kat-brand-25 ... 950` and `--kat-font-body` / `--kat-font-heading` and the whole
+panel follows. A test keeps raw values out of everything but the `:root` blocks.
 
 ## Status
 

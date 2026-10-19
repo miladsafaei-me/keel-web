@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% load i18n keel_icons %}
+
+{% block title %}{% translate 'Server error (500)' %}{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="kat-empty-state kat-empty-state--page">
+  <span class="kat-empty-state__icon" aria-hidden="true">{% icon "alert-triangle" class="kat-icon" %}</span>
+  <h1 class="kat-page-title">{% translate 'Server error (500)' %}</h1>
+  <p class="kat-empty-state__text">{% translate 'There’s been an error. It’s been reported to the site administrators via email and should be fixed shortly. Thanks for your patience.' %}</p>
+</div>
+{% endblock %}

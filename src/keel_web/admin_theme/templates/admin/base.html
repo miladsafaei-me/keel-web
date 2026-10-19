@@ -1,0 +1,139 @@
+{% load i18n static tz keel_icons keel_admin_theme %}{% admin_theme as theme %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:'en-us' }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}" class="kat" data-theme-default="{{ theme.default_theme }}">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}{% endblock %}</title>
+<meta name="color-scheme" content="light dark">
+{% block responsive %}<meta name="viewport" content="width=device-width, initial-scale=1">{% endblock %}
+{% block blockbots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+<script src="{% static 'keel_web_admin_theme/js/admin-theme-init.js' %}"></script>
+{% block favicon %}{% if theme.favicon %}<link rel="icon" href="{% static theme.favicon %}">{% endif %}{% endblock %}
+<link rel="stylesheet" href="{% block stylesheet %}{% static 'keel_web_admin_theme/css/admin-theme.css' %}{% endblock %}">
+{% for sheet in theme.stylesheets %}<link rel="stylesheet" href="{% static sheet %}">
+{% endfor %}{% block dark-mode-vars %}{% endblock %}
+{% block extrastyle %}{% endblock %}
+{% block extrahead %}{% endblock %}
+<script src="{% static 'keel_web_admin_theme/js/admin-theme.js' %}" defer></script>
+</head>
+
+<body class="kat-body{% if is_popup %} popup{% endif %} {% block bodyclass %}{% endblock %}"
+  data-admin-utc-offset="{% now 'Z' %}"
+  data-admin-server-timezone="{% get_current_timezone as time_zone %}{{ time_zone }}">
+<a href="#content-start" class="kat-skip-link">{% translate 'Skip to main content' %}</a>
+{% block layout %}
+<div class="kat-shell{% if is_popup %} kat-shell--popup{% endif %}" id="container">
+  {% if not is_popup and has_permission %}
+    {% block nav-sidebar %}{% include "admin/nav_sidebar.html" %}{% endblock %}
+  {% endif %}
+
+  <div class="kat-shell__main">
+    {% if not is_popup %}
+    {% block header %}
+    <header class="kat-topbar" id="header">
+      <div class="kat-topbar__start" id="branding">
+        {% if has_permission %}
+        <button type="button" class="kat-icon-btn" data-kat-sidebar-toggle aria-controls="kat-sidebar" aria-expanded="false">
+          {% icon "menu-2" class="kat-icon" %}<span class="visually-hidden">{% translate 'Toggle navigation' %}</span>
+        </button>
+        {% endif %}
+        {% block branding %}{% endblock %}
+        {% if site_url %}
+        <a class="kat-topbar__site" href="{{ site_url }}">{% icon "external-link" class="kat-icon kat-icon--sm" %}<span>{% translate 'View site' %}</span></a>
+        {% endif %}
+      </div>
+      <div class="kat-topbar__end" id="user-tools">
+        {% include "admin/color_theme_toggle.html" %}
+        {% block usertools %}
+        {% if has_permission %}
+        <div class="kat-user-menu" data-kat-menu>
+          <button type="button" class="kat-user-menu__button" data-kat-menu-toggle aria-expanded="false" aria-controls="kat-user-menu-panel">
+            <span class="kat-avatar" aria-hidden="true">{{ user|initials }}</span>
+            <span class="kat-user-menu__name">{% block welcome-msg %}{% firstof user.get_short_name user.get_username %}{% endblock %}</span>
+            {% icon "chevron-down" class="kat-icon kat-icon--sm kat-user-menu__chevron" %}
+          </button>
+          <div class="kat-user-menu__panel" id="kat-user-menu-panel" hidden>
+            <p class="kat-user-menu__who">
+              <span class="kat-user-menu__full">{% firstof user.get_full_name user.get_username %}</span>
+              {% if user.email %}<span class="kat-user-menu__email">{{ user.email }}</span>{% endif %}
+            </p>
+            <ul class="kat-user-menu__links">
+              {% block userlinks %}
+              {% if site_url %}
+              <li><a class="kat-user-menu__link" href="{{ site_url }}">{% icon "external-link" class="kat-icon kat-icon--sm" %}{% translate 'View site' %}</a></li>
+              {% endif %}
+              {% if user.is_active and user.is_staff %}
+                {% url 'django-admindocs-docroot' as docsroot %}
+                {% if docsroot %}
+                <li><a class="kat-user-menu__link" href="{{ docsroot }}">{% icon "file-text" class="kat-icon kat-icon--sm" %}{% translate 'Documentation' %}</a></li>
+                {% endif %}
+              {% endif %}
+              {% if user.has_usable_password %}
+              <li><a class="kat-user-menu__link" href="{% url 'admin:password_change' %}">{% icon "key" class="kat-icon kat-icon--sm" %}{% translate 'Change password' %}</a></li>
+              {% endif %}
+              {% endblock %}
+            </ul>
+            <form id="logout-form" class="kat-user-menu__logout" method="post" action="{% url 'admin:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="kat-user-menu__link">{% icon "logout" class="kat-icon kat-icon--sm" %}{% translate 'Log out' %}</button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+        {% endblock %}
+      </div>
+      {% block nav-global %}{% endblock %}
+    </header>
+    {% endblock %}
+    {% endif %}
+
+    <main id="content-start" class="kat-page" tabindex="-1">
+      <div class="kat-page__inner">
+        {% block messages %}
+          {% if messages %}
+          <ul class="kat-messages messagelist">
+            {% for message in messages %}
+            <li class="kat-alert kat-alert--{{ message.level_tag|default:'info' }}{% if message.tags %} {{ message.tags }}{% endif %}">
+              {% if message.level_tag == 'success' %}{% icon "circle-check" class="kat-alert__icon" %}{% elif message.level_tag == 'error' %}{% icon "alert-circle" class="kat-alert__icon" %}{% elif message.level_tag == 'warning' %}{% icon "alert-triangle" class="kat-alert__icon" %}{% else %}{% icon "info-circle" class="kat-alert__icon" %}{% endif %}
+              <span class="kat-alert__body">{{ message|capfirst }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        {% endblock messages %}
+
+        <div id="content" class="kat-content {% block coltype %}colM{% endblock %}">
+          <div class="kat-page-header titles-and-tools">
+            <div class="kat-page-header__titles titles">
+              {% if not is_popup %}
+              {% block nav-breadcrumbs %}
+              <nav class="kat-breadcrumbs" aria-label="{% translate 'Breadcrumbs' %}">
+                {% block breadcrumbs %}
+                <ol class="breadcrumbs">
+                  <li><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a></li>
+                  {% if title %}<li aria-current="page">{{ title }}</li>{% endif %}
+                </ol>
+                {% endblock %}
+              </nav>
+              {% endblock %}
+              {% endif %}
+              {% block pretitle %}{% endblock %}
+              {% block content_title %}{% if title %}<h1 class="kat-page-title">{{ title }}</h1>{% endif %}{% endblock %}
+              {% block content_subtitle %}{% if subtitle %}<p class="kat-page-subtitle">{{ subtitle }}</p>{% endif %}{% endblock %}
+            </div>
+            {% block object-tools %}{% endblock %}
+          </div>
+          {% block content %}
+            {{ content }}
+          {% endblock %}
+          {% block sidebar %}{% endblock %}
+        </div>
+      </div>
+      <footer id="footer" class="kat-footer">{% block footer %}{% endblock %}</footer>
+    </main>
+  </div>
+</div>
+{% endblock layout %}
+{% block extrabody %}{% endblock extrabody %}
+</body>
+</html>

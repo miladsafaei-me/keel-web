@@ -21,6 +21,10 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     the field-agnostic 3-tab content editor partials, permission mixins,
     `resolve_nav_active`, the Gemini image-gen HTTP/decode/retry core, the WebP
     image-upload helper, and the admin CSS/JS.
+  - `keel_web.admin_theme`: the stock Django admin in the staff-panel look: overrides of
+    every `admin/` and `registration/` template, `admin-theme.css` (tokens only, light and
+    dark), `admin-theme.js`, the boolean icons; configured by `KEEL_WEB["admin_theme"]`.
+    Must sit before `django.contrib.admin` (check `keel_web_admin_theme.E001`).
   - `keel_web.client` — `base_client` + partials, profile/settings + persona
     builder + billing stub + resend-verification, `NavItem`/`NavSection` +
     `resolve_client_nav`, `client_extras` tags, the shared TailAdmin CSS/JS bundle.

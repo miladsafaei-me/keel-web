@@ -62,8 +62,11 @@ from collections.abc import Callable
 from django.core.cache import caches
 from django.db import connections, router
 from django.http import HttpRequest, HttpResponse
-from django.utils.cache import cc_delim_re, patch_vary_headers
+from django.utils.cache import patch_vary_headers
 from django.utils.regex_helper import _lazy_re_compile
+
+# Django 6.1 dropped django.utils.cache.cc_delim_re; this is the same pattern.
+cc_delim_re = _lazy_re_compile(r"\s*,\s*")
 
 HEADER = "X-Keel-Page-Cache"
 DEFAULT_TIMEOUT = 7 * 24 * 60 * 60

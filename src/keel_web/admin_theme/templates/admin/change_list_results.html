@@ -1,0 +1,44 @@
+{% load i18n keel_icons %}
+{% if result_hidden_fields %}
+<div class="hiddenfields">{% for item in result_hidden_fields %}{{ item }}{% endfor %}</div>
+{% endif %}
+{% if results %}
+<div class="kat-table-wrap results">
+<table id="result_list" class="kat-table">
+<thead>
+<tr>
+{% for header in result_headers %}
+<th scope="col"{{ header.class_attrib }}>
+  {% if header.sortable %}
+  <span class="kat-sort">
+    <a class="kat-sort__link" href="{{ header.url_primary }}">{{ header.text|capfirst }}<span class="kat-sort__icon{% if header.sorted %} is-sorted{% endif %}" aria-hidden="true">{% if header.sorted %}{% if header.ascending %}{% icon "chevron-up" class="kat-icon kat-icon--xs" %}{% else %}{% icon "chevron-down" class="kat-icon kat-icon--xs" %}{% endif %}{% else %}{% icon "selector" class="kat-icon kat-icon--xs" %}{% endif %}</span></a>
+    {% if header.sort_priority > 0 %}
+    <span class="kat-sort__options sortoptions">
+      {% if num_sorted_fields > 1 %}<span class="kat-sort__priority sortpriority" title="{% blocktranslate with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktranslate %}">{{ header.sort_priority }}</span>{% endif %}
+      <a class="kat-sort__remove sortremove" href="{{ header.url_remove }}" title="{% translate 'Remove from sorting' %}">{% icon "x" class="kat-icon kat-icon--xs" %}<span class="visually-hidden">{% translate 'Remove from sorting' %}</span></a>
+    </span>
+    {% endif %}
+  </span>
+  {% else %}
+  <span class="text">{{ header.text|capfirst }}</span>
+  {% endif %}
+</th>{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for result in results %}
+{% if result.form and result.form.non_field_errors %}
+<tr class="kat-table__errors"><td colspan="{{ result|length }}">{{ result.form.non_field_errors }}</td></tr>
+{% endif %}
+<tr>{% for item in result %}{{ item }}{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="kat-empty-state">
+  <span class="kat-empty-state__icon" aria-hidden="true">{% icon "folder-open" class="kat-icon" %}</span>
+  <p class="kat-empty-state__title">{% blocktranslate with name=cl.opts.verbose_name_plural %}No {{ name }} to show{% endblocktranslate %}</p>
+  {% if cl.query or cl.has_active_filters %}<p class="kat-empty-state__text">{% translate 'Nothing matches the search or the filters.' %}</p>{% endif %}
+</div>
+{% endif %}

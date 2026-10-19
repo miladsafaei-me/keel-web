@@ -112,6 +112,11 @@ _ICONS: dict[str, str] = {
     "trending-up-2": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M3 17l6 -6l4 4l8 -8' /> <path d='M14 7l7 0l0 7' />",
     "trending-down": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M3 7l6 6l4 -4l8 8' /> <path d='M21 10l0 7l-7 0' />",
     "lock": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z' /> <path d='M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0' /> <path d='M8 11v-4a4 4 0 1 1 8 0v4' />",
+    "chevron-up": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M6 15l6 -6l6 6' />",
+    "selector": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M8 9l4 -4l4 4' /> <path d='M16 15l-4 4l-4 -4' />",
+    "history": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M12 8l0 4l2 2' /> <path d='M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5' />",
+    "clock": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0' /> <path d='M12 7v5l3 3' />",
+    "minus": "<path stroke='none' d='M0 0h24v24H0z' fill='none'/> <path d='M5 12l14 0' />",
 }
 
 

@@ -1,0 +1,35 @@
+{% load i18n keel_icons keel_admin_theme %}
+{% if app_list %}
+<div class="kat-app-grid">
+  {% for app in app_list %}
+  <section class="kat-card kat-app-card app-{{ app.app_label }} module{% if app.app_url in request.path|urlencode %} current-app{% endif %}" aria-labelledby="kat-app-{{ app.app_label }}">
+    <header class="kat-card__header">
+      <h2 class="kat-card__title" id="kat-app-{{ app.app_label }}"><a class="section" href="{{ app.app_url }}">{{ app.name }}</a></h2>
+      <p class="kat-card__meta">{% blocktranslate count counter=app.models|length %}{{ counter }} section{% plural %}{{ counter }} sections{% endblocktranslate %}</p>
+    </header>
+    <ul class="kat-model-list">
+      {% for model in app.models %}
+      {% with model_name=model.object_name|lower %}
+      <li class="kat-model-row model-{{ model_name }}{% if model.admin_url in request.path|urlencode %} current-model{% endif %}">
+        <span class="kat-model-row__icon" aria-hidden="true">{% model_icon app.app_label model.object_name "kat-icon" %}</span>
+        <span class="kat-model-row__name" id="{{ app.app_label }}-{{ model_name }}">
+          {% if model.admin_url %}<a href="{{ model.admin_url }}"{% if model.admin_url in request.path|urlencode %} aria-current="page"{% endif %}>{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+        </span>
+        <span class="kat-model-row__actions">
+          {% if model.add_url %}
+          <a href="{{ model.add_url }}" class="kat-btn kat-btn--sm kat-btn--soft addlink" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% icon "plus" class="kat-icon kat-icon--sm" %}{% translate 'Add' %}</a>
+          {% endif %}
+          {% if model.admin_url and show_changelinks %}
+          <a href="{{ model.admin_url }}" class="kat-btn kat-btn--sm kat-btn--outline {% if model.view_only %}viewlink{% else %}changelink{% endif %}" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% if model.view_only %}{% icon "eye" class="kat-icon kat-icon--sm" %}{% translate 'View' %}{% else %}{% icon "pencil" class="kat-icon kat-icon--sm" %}{% translate 'Change' %}{% endif %}</a>
+          {% endif %}
+        </span>
+      </li>
+      {% endwith %}
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<div class="kat-card"><p class="kat-empty">{% translate 'You don’t have permission to view or edit anything.' %}</p></div>
+{% endif %}

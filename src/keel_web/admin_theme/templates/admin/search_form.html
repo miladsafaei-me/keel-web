@@ -1,0 +1,21 @@
+{% load i18n keel_icons %}
+{% if cl.search_fields %}
+<div id="toolbar" class="kat-search">
+<h2 id="changelist-search-form" class="visually-hidden">{% blocktranslate with name=cl.opts.verbose_name_plural %}Search {{ name }}{% endblocktranslate %}</h2>
+<form id="changelist-search" class="kat-search__form" method="get" role="search" aria-labelledby="changelist-search-form">
+  <label class="kat-search__field" for="searchbar">
+    {% icon "search" class="kat-icon kat-icon--sm kat-search__icon" %}
+    <span class="visually-hidden">{% translate 'Search' %}</span>
+    <input type="search" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" class="kat-search__input" placeholder="{% blocktranslate with name=cl.opts.verbose_name_plural %}Search {{ name }}{% endblocktranslate %}"{% if cl.search_help_text %} aria-describedby="searchbar_helptext"{% endif %}>
+  </label>
+  <button type="submit" class="kat-btn kat-btn--primary">{% translate 'Search' %}</button>
+  {% if show_result_count %}
+  <span class="kat-search__count small quiet">{% blocktranslate count counter=cl.result_count %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktranslate %} · <a href="?{% if cl.is_popup %}{{ is_popup_var }}=1{% if cl.add_facets %}&{% endif %}{% endif %}{% if cl.add_facets %}{{ is_facets_var }}{% endif %}">{% if cl.show_full_result_count %}{% blocktranslate with full_result_count=cl.full_result_count %}{{ full_result_count }} total{% endblocktranslate %}{% else %}{% translate "Show all" %}{% endif %}</a></span>
+  {% endif %}
+  {% for pair in cl.params.items %}
+    {% if pair.0 != search_var %}<input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">{% endif %}
+  {% endfor %}
+  {% if cl.search_help_text %}<p class="kat-help kat-search__help" id="searchbar_helptext">{{ cl.search_help_text }}</p>{% endif %}
+</form>
+</div>
+{% endif %}

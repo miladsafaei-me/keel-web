@@ -13,6 +13,9 @@ ALLOWED_HOSTS = ["testserver"]
 USE_TZ = True
 
 INSTALLED_APPS = [
+    "keel_web.admin_theme",
+    "django.contrib.admin",
+    "django.contrib.messages",
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
@@ -34,6 +37,7 @@ MIDDLEWARE = [
     "tests.hostapp.middleware.FakeStaffMiddleware",
     "keel_web.geo_block.GeoBlockMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     # Stands in for whatever host-specific middleware unconditionally writes to
     # the session on every request (django-machina's ForumPermissionMiddleware
     # in the reference case) -- placed after AnonymousPageCacheMiddleware in
@@ -51,6 +55,8 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },

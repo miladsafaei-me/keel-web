@@ -1,0 +1,9 @@
+{% extends "keel_web_admin_theme/auth_layout.html" %}
+{% load i18n keel_icons %}
+
+{% block auth_content %}
+<span class="kat-auth__status kat-auth__status--success" aria-hidden="true">{% icon "circle-check" class="kat-icon" %}</span>
+<h1 class="kat-auth__title">{% translate "Logged out" %}</h1>
+<p class="kat-auth__lead">{% translate "Thanks for spending some quality time with the web site today." %}</p>
+<p class="kat-auth__submit"><a class="kat-btn kat-btn--primary kat-btn--block" href="{% url 'admin:index' %}">{% translate 'Log in again' %}</a></p>
+{% endblock %}

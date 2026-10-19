@@ -1,0 +1,17 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block bodyclass %}{{ block.super }} app-{{ app_label }}{% endblock %}
+
+{% if not is_popup %}
+{% block nav-breadcrumbs %}
+<nav class="kat-breadcrumbs" aria-label="{% translate 'Breadcrumbs' %}">
+  <ol class="breadcrumbs">
+    <li><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a></li>
+    {% for app in app_list %}<li aria-current="page">{{ app.name }}</li>{% endfor %}
+  </ol>
+</nav>
+{% endblock %}
+{% endif %}
+
+{% block dashboard_side %}{% endblock %}

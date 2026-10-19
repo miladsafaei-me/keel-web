@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n keel_icons %}
+{% comment %}
+  The signed-out pages (login, logged out, password reset): the form on one side and the
+  brand panel on the other, with no sidebar or top bar. Pages fill auth_content.
+{% endcomment %}
+
+{% block bodyclass %}{{ block.super }} kat-auth-page{% endblock %}
+
+{% block layout %}
+<div class="kat-auth">
+  <main class="kat-auth__main" id="content-start" tabindex="-1">
+    <div class="kat-auth__toggle">{% include "admin/color_theme_toggle.html" %}</div>
+    <div class="kat-auth__column" id="content-main">
+      <a class="kat-auth__brand" href="{% url 'admin:index' %}">
+        {% include "keel_web_admin_theme/brand_mark.html" with size="sidebar" %}
+        <span class="kat-auth__brand-name">{{ theme.brand_name }}</span>
+      </a>
+      {% block auth_content %}{% endblock %}
+    </div>
+  </main>
+  <aside class="kat-auth__panel" aria-hidden="true">
+    <div class="kat-auth__panel-inner">
+      {% include "keel_web_admin_theme/brand_mark.html" with size="panel" %}
+      <p class="kat-auth__panel-name">{{ theme.brand_name }}</p>
+      {% if theme.tagline %}<p class="kat-auth__panel-tagline">{{ theme.tagline }}</p>{% endif %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

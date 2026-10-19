@@ -1,0 +1,5 @@
+{% load i18n keel_icons %}
+<button type="button" class="kat-icon-btn kat-icon-btn--round kat-theme-toggle theme-toggle" data-kat-theme-toggle aria-pressed="false">
+  {% icon "moon" class="kat-icon kat-theme-toggle__moon" %}{% icon "sun" class="kat-icon kat-theme-toggle__sun" %}
+  <span class="visually-hidden">{% translate 'Dark theme' %}</span>
+</button>

@@ -1,0 +1,109 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list keel_icons %}
+
+{% block title %}{% if cl.formset and cl.formset.errors %}{% translate "Error:" %} {% endif %}{{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% if cl.formset or action_form %}<script src="{% url 'admin:jsi18n' %}"></script>{% endif %}
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media.js }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<ol class="breadcrumbs">
+<li><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a></li>
+<li><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
+<li aria-current="page">{{ cl.opts.verbose_name_plural|capfirst }}</li>
+</ol>
+{% endblock %}
+{% endif %}
+
+{% block coltype %}{% endblock %}
+
+{% block object-tools %}
+<ul class="kat-object-tools object-tools">
+  {% block object-tools-items %}
+    {% change_list_object_tools %}
+  {% endblock %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="kat-changelist-page">
+  {% if cl.formset and cl.formset.errors %}
+  <p class="kat-alert kat-alert--error errornote" role="alert">
+    {% icon "alert-circle" class="kat-alert__icon" %}
+    <span class="kat-alert__body">{% blocktranslate count counter=cl.formset.total_error_count %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}</span>
+  </p>
+  {{ cl.formset.non_form_errors }}
+  {% endif %}
+
+  <div class="kat-changelist{% if cl.has_filters %} filtered{% endif %}" id="changelist">
+    {% if cl.search_fields or cl.has_filters or cl.date_hierarchy %}
+    <div class="kat-toolbar">
+      {% block search %}{% search_form cl %}{% endblock %}
+      {% if cl.has_filters %}
+      <button type="button" class="kat-btn kat-btn--outline kat-toolbar__filters" data-kat-drawer-open="changelist-filter" aria-controls="changelist-filter" aria-expanded="false">
+        {% icon "filter" class="kat-icon kat-icon--sm" %}{% translate 'Filters' %}
+        {% if cl.has_active_filters %}<span class="kat-badge kat-badge--brand">{% translate 'On' %}</span>{% endif %}
+      </button>
+      {% endif %}
+    </div>
+    {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
+    {% endif %}
+
+    <form id="changelist-form" class="kat-card kat-results" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+      {% if cl.formset %}<div>{{ cl.formset.management_form }}</div>{% endif %}
+
+      {% block result_list %}
+        {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+        {% result_list cl %}
+        {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+      {% endblock %}
+
+      {% block pagination %}
+      <div class="kat-results__footer changelist-footer">
+        {% pagination cl %}
+        {% if cl.formset and cl.result_count %}<input type="submit" name="_save" class="kat-btn kat-btn--primary default" value="{% translate 'Save' %}">{% endif %}
+      </div>
+      {% endblock %}
+    </form>
+
+    {% block filters %}
+    {% if cl.has_filters %}
+    <div class="kat-drawer" id="changelist-filter" role="dialog" aria-modal="true" aria-labelledby="changelist-filter-header" hidden>
+      <div class="kat-backdrop" data-kat-drawer-close></div>
+      <search class="kat-drawer__panel">
+        <header class="kat-drawer__header">
+          <h2 class="kat-drawer__title" id="changelist-filter-header">{% icon "filter" class="kat-icon kat-icon--sm" %}{% translate 'Filter' %}</h2>
+          <button type="button" class="kat-icon-btn" data-kat-drawer-close>{% icon "x" class="kat-icon" %}<span class="visually-hidden">{% translate 'Close' %}</span></button>
+        </header>
+        {% if cl.is_facets_optional or cl.has_active_filters %}
+        <div class="kat-drawer__actions" id="changelist-filter-extra-actions">
+          {% if cl.is_facets_optional %}
+            {% if cl.add_facets %}<a href="{{ cl.remove_facet_link }}" class="kat-btn kat-btn--sm kat-btn--outline hidelink">{% translate "Hide counts" %}</a>
+            {% else %}<a href="{{ cl.add_facet_link }}" class="kat-btn kat-btn--sm kat-btn--outline viewlink">{% translate "Show counts" %}</a>{% endif %}
+          {% endif %}
+          {% if cl.has_active_filters %}
+            <a href="{{ cl.clear_all_filters_qs }}" class="kat-btn kat-btn--sm kat-btn--soft">{% icon "x" class="kat-icon kat-icon--sm" %}{% translate "Clear all filters" %}</a>
+          {% endif %}
+        </div>
+        {% endif %}
+        <div class="kat-drawer__body">
+          {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+        </div>
+      </search>
+    </div>
+    {% endif %}
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

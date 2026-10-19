@@ -1,0 +1,14 @@
+{% load i18n keel_icons %}
+<details class="kat-filter" data-filter-title="{{ title }}" open>
+  <summary class="kat-filter__title">
+    <span>{% blocktranslate with filter_title=title %}By {{ filter_title }}{% endblocktranslate %}</span>
+    {% icon "chevron-down" class="kat-icon kat-icon--sm kat-filter__chevron" %}
+  </summary>
+  <ul class="kat-filter__choices">
+  {% for choice in choices %}
+    <li{% if choice.selected %} class="selected"{% endif %}>
+      <a class="kat-filter__choice{% if choice.selected %} is-selected{% endif %}" href="{{ choice.query_string|iriencode }}"{% if choice.selected %} aria-current="true"{% endif %}>{{ choice.display }}</a>
+    </li>
+  {% endfor %}
+  </ul>
+</details>

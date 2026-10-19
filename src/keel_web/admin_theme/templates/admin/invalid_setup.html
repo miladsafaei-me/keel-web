@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% load i18n keel_icons %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumbs">
+<li><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a></li>
+<li aria-current="page">{{ title }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="kat-alert kat-alert--error">{% icon "alert-triangle" class="kat-alert__icon" %}<p class="kat-alert__body">{% translate 'Something’s wrong with your database installation. Make sure the appropriate database tables have been created, and make sure the database is readable by the appropriate user.' %}</p></div>
+{% endblock %}

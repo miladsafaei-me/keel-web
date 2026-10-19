@@ -1,0 +1,7 @@
+{% load i18n %}
+<h2 class="kat-confirm__heading">{% translate "Summary" %}</h2>
+<ul class="kat-summary">
+  {% for model_name, object_count in model_count %}
+  <li class="kat-summary__item"><span class="kat-summary__count">{{ object_count }}</span><span class="kat-summary__label">{{ model_name|capfirst }}</span></li>
+  {% endfor %}
+</ul>

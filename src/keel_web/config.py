@@ -123,6 +123,21 @@ domain-neutral.
             # minimal built-in page.
             "template": None,
         },
+        # The stock Django admin drawn in the staff-panel look; see
+        # keel_web/admin_theme/. Every key is optional.
+        "admin_theme": {
+            "brand_name": None,           # None: admin.site.site_header
+            "tagline": "",
+            "logo": None,                 # static path; None draws initials
+            "logo_round": False,
+            "favicon": None,
+            "stylesheets": (),            # host fonts + token overrides
+            "model_icons": {},            # {"app.model" or "app": icon name}
+            "nav_links": (),              # ({"label", "url", "icon"}, ...)
+            "login_title": "Sign in",
+            "login_text": "Enter your username and password to reach the panel.",
+            "default_theme": "auto",      # "auto" | "light" | "dark"
+        },
     }
 """
 from __future__ import annotations
@@ -216,6 +231,34 @@ _DEFAULTS = {
         },
         "media_variants": {"dir": "_v", "quality": 82, "max_age": 31536000},
     },
+    # keel_web.admin_theme: the staff-panel look for the stock Django admin. See
+    # README.md, "Admin theme".
+    "admin_theme": {
+        # Name in the sidebar, the login page and the tab title. None uses
+        # admin.site.site_header.
+        "brand_name": None,
+        # One short line under the name in the sidebar and on the login panel.
+        "tagline": "",
+        # Static path of the logo shown beside the name; None draws the initials.
+        "logo": None,
+        # Draw the logo as a circle (a portrait or an avatar).
+        "logo_round": False,
+        # Static path of the tab icon.
+        "favicon": None,
+        # Static paths of host stylesheets loaded after the theme: fonts and the
+        # token overrides that give the panel the host's colours and type.
+        "stylesheets": (),
+        # Icon names (keel_icons) per "app_label.model_name" or per "app_label".
+        "model_icons": {},
+        # Extra sidebar links under Dashboard: ({"label", "url", "icon"}, ...),
+        # where url is a path or a URL name.
+        "nav_links": (),
+        # Login page copy.
+        "login_title": "Sign in",
+        "login_text": "Enter your username and password to reach the panel.",
+        # "auto" follows the system; "light" or "dark" fixes the first visit.
+        "default_theme": "auto",
+    },
 }
 
 
@@ -227,6 +270,12 @@ def frontend_setting(key):
     if isinstance(default, dict) and isinstance(value, dict) and value is not default:
         return {**default, **value}
     return value
+
+
+def admin_theme_setting(key):
+    """Return ``KEEL_WEB["admin_theme"][key]`` or its package default."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("admin_theme", {}) or {}
+    return configured.get(key, _DEFAULTS["admin_theme"][key])
 
 
 def web_setting(key):

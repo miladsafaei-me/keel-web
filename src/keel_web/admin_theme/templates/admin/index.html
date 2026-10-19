@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static keel_icons %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block content %}
+<div class="kat-dashboard">
+  <div id="content-main" class="kat-dashboard__apps app-list">
+    {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  </div>
+  {% block dashboard_side %}
+  <div id="content-related" class="kat-dashboard__side">
+    <section class="kat-card" id="recent-actions-module" aria-labelledby="recent-actions-title">
+      <header class="kat-card__header">
+        <h2 class="kat-card__title" id="recent-actions-title">{% translate 'Recent actions' %}</h2>
+        <p class="kat-card__meta">{% translate 'My actions' %}</p>
+      </header>
+      {% load log %}
+      {% get_admin_log 10 as admin_log for_user user %}
+      {% if not admin_log %}
+      <p class="kat-empty">{% translate 'None available' %}</p>
+      {% else %}
+      <ul class="kat-activity actionlist">
+        {% for entry in admin_log %}
+        <li class="kat-activity__item{% if entry.is_addition %} addlink{% endif %}{% if entry.is_change %} changelink{% endif %}{% if entry.is_deletion %} deletelink{% endif %}">
+          <span class="kat-activity__mark kat-activity__mark--{% if entry.is_addition %}add{% elif entry.is_deletion %}delete{% else %}change{% endif %}" aria-hidden="true">
+            {% if entry.is_addition %}{% icon "plus" class="kat-icon kat-icon--sm" %}{% elif entry.is_deletion %}{% icon "trash" class="kat-icon kat-icon--sm" %}{% else %}{% icon "pencil" class="kat-icon kat-icon--sm" %}{% endif %}
+          </span>
+          <span class="kat-activity__text">
+            <span class="visually-hidden">{% if entry.is_addition %}{% translate 'Added:' %}{% elif entry.is_change %}{% translate 'Changed:' %}{% elif entry.is_deletion %}{% translate 'Deleted:' %}{% endif %}</span>
+            {% if entry.is_deletion or not entry.get_admin_url %}
+              <span class="kat-activity__object">{{ entry.object_repr }}</span>
+            {% else %}
+              <a class="kat-activity__object" href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+            {% endif %}
+            <span class="kat-activity__meta">
+              {% if entry.content_type %}{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}{% else %}{% translate 'Unknown content' %}{% endif %}
+              · <time datetime="{{ entry.action_time|date:'c' }}">{{ entry.action_time|date:"M j, H:i" }}</time>
+            </span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+  </div>
+  {% endblock %}
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

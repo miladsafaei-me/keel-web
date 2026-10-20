@@ -11,6 +11,7 @@
     </h2>
   {% if inline_admin_formset.is_collapsible %}{% icon "chevron-down" class="kat-icon kat-icon--sm kat-collapse__chevron" %}</summary>{% else %}</div>{% endif %}
   {{ inline_admin_formset.formset.non_form_errors }}
+  <p class="kat-inline__empty">{% blocktranslate with name=inline_admin_formset.opts.verbose_name_plural %}No {{ name }} yet.{% endblocktranslate %}</p>
   <div class="kat-table-wrap wrapper">
     <table class="kat-table kat-table--inline">
      <thead><tr>
@@ -44,7 +45,7 @@
         {% for fieldset in inline_admin_form %}
           {% for line in fieldset %}
             {% for field in line %}
-              <td class="{% if field.field.name %}field-{{ field.field.name }}{% endif %}{% if field.field.is_hidden %} hidden{% endif %}">
+              <td class="{% if field.field.name %}field-{{ field.field.name }}{% endif %}{% if field.field.is_hidden %} hidden{% endif %}" data-label="{{ field.field.label|capfirst }}">
               {% if field.is_readonly %}
                   <p class="kat-readonly-cell">{{ field.contents }}</p>
               {% else %}
@@ -55,7 +56,7 @@
             {% endfor %}
           {% endfor %}
         {% endfor %}
-        <td class="delete">{% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission and inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}</td>
+        <td class="delete" data-label="{% translate "Delete?" %}">{% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission and inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}</td>
         </tr>
      {% endfor %}
      </tbody>

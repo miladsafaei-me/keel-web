@@ -52,7 +52,7 @@
       {% block search %}{% search_form cl %}{% endblock %}
       {% if cl.has_filters %}
       <button type="button" class="kat-btn kat-btn--outline kat-toolbar__filters" data-kat-drawer-open="changelist-filter" aria-controls="changelist-filter" aria-expanded="false">
-        {% icon "filter" class="kat-icon kat-icon--sm" %}{% translate 'Filters' %}
+        {% icon "filter" class="kat-icon kat-icon--sm" %}<span class="kat-btn__label">{% translate 'Filters' %}</span>
         {% if cl.has_active_filters %}<span class="kat-badge kat-badge--brand">{% translate 'On' %}</span>{% endif %}
       </button>
       {% endif %}

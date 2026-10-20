@@ -17,10 +17,10 @@
         </span>
         <span class="kat-model-row__actions">
           {% if model.add_url %}
-          <a href="{{ model.add_url }}" class="kat-btn kat-btn--sm kat-btn--soft addlink" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% icon "plus" class="kat-icon kat-icon--sm" %}{% translate 'Add' %}</a>
+          <a href="{{ model.add_url }}" class="kat-btn kat-btn--sm kat-btn--soft addlink" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% icon "plus" class="kat-icon kat-icon--sm" %}<span class="kat-btn__label">{% translate 'Add' %}</span></a>
           {% endif %}
           {% if model.admin_url and show_changelinks %}
-          <a href="{{ model.admin_url }}" class="kat-btn kat-btn--sm kat-btn--outline {% if model.view_only %}viewlink{% else %}changelink{% endif %}" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% if model.view_only %}{% icon "eye" class="kat-icon kat-icon--sm" %}{% translate 'View' %}{% else %}{% icon "pencil" class="kat-icon kat-icon--sm" %}{% translate 'Change' %}{% endif %}</a>
+          <a href="{{ model.admin_url }}" class="kat-btn kat-btn--sm kat-btn--outline {% if model.view_only %}viewlink{% else %}changelink{% endif %}" aria-describedby="{{ app.app_label }}-{{ model_name }}">{% if model.view_only %}{% icon "eye" class="kat-icon kat-icon--sm" %}<span class="kat-btn__label">{% translate 'View' %}</span>{% else %}{% icon "pencil" class="kat-icon kat-icon--sm" %}<span class="kat-btn__label">{% translate 'Change' %}</span>{% endif %}</a>
           {% endif %}
         </span>
       </li>

@@ -11,6 +11,7 @@
   {% if inline_admin_formset.is_collapsible %}{% icon "chevron-down" class="kat-icon kat-icon--sm kat-collapse__chevron" %}</summary>{% else %}</div>{% endif %}
 {{ inline_admin_formset.formset.management_form }}
 {{ inline_admin_formset.formset.non_form_errors }}
+<p class="kat-inline__empty">{% blocktranslate with name=inline_admin_formset.opts.verbose_name_plural %}No {{ name }} yet.{% endblocktranslate %}</p>
 <div class="kat-stack">
 {% for inline_admin_form in inline_admin_formset %}<div class="kat-stack__item inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form last-related{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if forloop.last and inline_admin_formset.has_add_permission %}empty{% else %}{{ forloop.counter0 }}{% endif %}">
   <h3 class="kat-stack__header"><b>{{ inline_admin_formset.opts.verbose_name|capfirst }}:</b> <span class="inline_label">{% if inline_admin_form.original %}{{ inline_admin_form.original }}{% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %} <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="{{ inline_admin_formset.has_change_permission|yesno:'inlinechangelink,inlineviewlink' }}">{% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate "View" %}{% endif %}</a>{% endif %}

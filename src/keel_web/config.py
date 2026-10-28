@@ -163,8 +163,10 @@ _DEFAULTS = {
     "client_path_prefix": "/client/",
     "user_db_table": "keel_web_auth_user",
     "signup_lead_hook": None,
+    "client_nav": None,
+    "client_base_context_hook": None,
     "email_logo_static": "img/email/logo.png",
-    "static_skip_hash_prefixes": ("client/tailwind/",),
+    "static_skip_hash_prefixes": ("client/tailwind/", "keel_web_client/tailwind/"),
     "static_minify_skip_substrings": (
         ".min.css",
         ".min.js",

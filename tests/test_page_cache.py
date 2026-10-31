@@ -147,3 +147,64 @@ class DataFingerprintTests(TestCase):
         from django.contrib.auth.models import Group
 
         self.assertNotEqual(data_fingerprint(User), data_fingerprint(User, Group))
+
+
+@override_settings(CACHES=LOCMEM)
+class BackgroundRefreshTests(TestCase):
+    def setUp(self):
+        caches["default"].clear()
+        self.request = RequestFactory().get("/")
+        self.renders = []
+
+    def serve(self, version, body, compatibility="static-a"):
+        def render():
+            self.renders.append(body)
+            return HttpResponse(body)
+
+        return cached_page(
+            self.request,
+            slot="home",
+            version=version,
+            render=render,
+            background_refresh=True,
+            compatibility=compatibility,
+        )
+
+    def test_a_stale_copy_is_served_at_once_and_refreshed_after_the_response_closes(self):
+        self.serve("v1", "old")
+        stale = self.serve("v2", "new")
+        self.assertEqual((stale[HEADER], stale.content), ("stale", b"old"))
+        self.assertEqual(self.renders, ["old"])
+        stale.close()
+        self.assertEqual(self.renders, ["old", "new"])
+        fresh = self.serve("v2", "never")
+        self.assertEqual((fresh[HEADER], fresh.content), ("hit", b"new"))
+
+    def test_only_one_refresh_is_started_while_one_is_pending(self):
+        self.serve("v1", "old")
+        first = self.serve("v2", "new")
+        second = self.serve("v2", "again")
+        self.assertEqual(second[HEADER], "stale")
+        second.close()
+        first.close()
+        self.assertEqual(self.renders, ["old", "new"])
+
+    def test_a_copy_from_other_static_files_is_never_served_stale(self):
+        self.serve("v1", "old", compatibility="static-a")
+        changed = self.serve("v2", "new", compatibility="static-b")
+        self.assertEqual((changed[HEADER], changed.content), ("miss", b"new"))
+
+    def test_a_failed_refresh_keeps_the_stale_copy_and_frees_the_lock(self):
+        self.serve("v1", "old")
+
+        def broken():
+            raise RuntimeError("render failed")
+
+        stale = cached_page(self.request, slot="home", version="v2", render=broken,
+                            background_refresh=True, compatibility="static-a")
+        with self.assertLogs("keel_web.page_cache", level="ERROR"):
+            stale.close()
+        retry = self.serve("v2", "new")
+        self.assertEqual((retry[HEADER], retry.content), ("stale", b"old"))
+        retry.close()
+        self.assertEqual(self.serve("v2", "never").content, b"new")

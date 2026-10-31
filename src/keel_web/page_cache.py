@@ -37,6 +37,17 @@ and an unbounded number of them at worst; hosts should render those directly.
     (``stale``) instead of stacking a second multi-second render behind the
     first — the new version lands the moment that render finishes.
 
+**Refreshing after the answer (``background_refresh``).** With it on, a stale
+entry is served at once (``stale``) even when no other worker is rendering, and
+the new version is rendered after that response has been sent: the render is
+attached to the response's close, which the WSGI server calls once the last byte
+is written. No reader then waits for a render except the first ever to ask for a
+slot. A stale copy is only served this way while its ``compatibility`` string
+still matches the current one; a host passes there whatever a stale page cannot
+outlive, such as the digest of the static manifest its hashed asset names come
+from. When it differs, the request renders in line as it would without the
+option.
+
 **Compression is paid once.** A stored entry keeps a gzip copy of the body beside
 the plain one and a hit answers a gzip-accepting client with it directly, so
 ``GZipMiddleware`` — which skips a response that already carries a
@@ -57,6 +68,7 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import logging
 from collections.abc import Callable
 
 from django.core.cache import caches
@@ -67,6 +79,8 @@ from django.utils.regex_helper import _lazy_re_compile
 
 # Django 6.1 dropped django.utils.cache.cc_delim_re; this is the same pattern.
 cc_delim_re = _lazy_re_compile(r"\s*,\s*")
+
+log = logging.getLogger(__name__)
 
 HEADER = "X-Keel-Page-Cache"
 DEFAULT_TIMEOUT = 7 * 24 * 60 * 60
@@ -114,12 +128,15 @@ def cached_page(
     cache_alias: str = "default",
     timeout: int = DEFAULT_TIMEOUT,
     lock_seconds: int = DEFAULT_LOCK_SECONDS,
+    background_refresh: bool = False,
+    compatibility: str = "",
 ) -> HttpResponse:
     """Return the page stored for ``slot`` at ``version``, rendering it when needed.
 
     ``render`` is called with no arguments and must return the response the view
     would have returned without this cache. See the module docstring for what a
-    slot must separate and for when the stored copy is served stale.
+    slot must separate, for when the stored copy is served stale, and for what
+    ``background_refresh`` and ``compatibility`` change.
     """
     cache = caches[cache_alias]
     entry_key = "keel_web:page:" + hashlib.sha256(slot.encode()).hexdigest()
@@ -128,6 +145,14 @@ def cached_page(
     entry = cache.get(entry_key)
     if entry and entry.get("version") == version:
         return _from_entry(request, entry, "hit")
+
+    if background_refresh and entry and entry.get("compatibility", "") == compatibility:
+        response = _from_entry(request, entry, "stale")
+        if cache.add(lock_key, version, lock_seconds):
+            response._resource_closers.append(
+                lambda: _refresh(cache, request, entry_key, lock_key, version, compatibility, render, timeout)
+            )
+        return response
 
     if not cache.add(lock_key, version, lock_seconds):
         if entry:
@@ -138,21 +163,37 @@ def cached_page(
 
     try:
         response = render()
-        if _storable(request, response):
-            cache.set(
-                entry_key,
-                {
-                    "version": version,
-                    "content": response.content,
-                    "gzip": gzip.compress(response.content, compresslevel=9, mtime=0),
-                    "content_type": response.get("Content-Type"),
-                },
-                timeout,
-            )
+        _store(cache, request, response, entry_key, version, compatibility, timeout)
     finally:
         cache.delete(lock_key)
     response[HEADER] = "miss"
     return response
+
+
+def _store(cache, request, response, entry_key, version, compatibility, timeout) -> None:
+    if _storable(request, response):
+        cache.set(
+            entry_key,
+            {
+                "version": version,
+                "compatibility": compatibility,
+                "content": response.content,
+                "gzip": gzip.compress(response.content, compresslevel=9, mtime=0),
+                "content_type": response.get("Content-Type"),
+            },
+            timeout,
+        )
+
+
+def _refresh(cache, request, entry_key, lock_key, version, compatibility, render, timeout) -> None:
+    """Render and store the new version after the stale copy has been sent. A failure is
+    logged and leaves the stale copy in place for the next request to try again."""
+    try:
+        _store(cache, request, render(), entry_key, version, compatibility, timeout)
+    except Exception:
+        log.exception("keel_web.page_cache: background refresh failed")
+    finally:
+        cache.delete(lock_key)
 
 
 def _from_entry(request: HttpRequest, entry: dict, state: str) -> HttpResponse:

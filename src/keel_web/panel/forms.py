@@ -9,7 +9,21 @@ from keel_web.admin_shell.forms import PanelFormMixin
 
 
 class PanelLoginForm(PanelFormMixin, AuthenticationForm):
-    pass
+    """Signs in with the username or the account's email."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = "Email or username"
+
+    def clean(self):
+        typed = (self.data.get(self.add_prefix("username")) or "").strip()
+        if "@" in typed:
+            model = get_user_model()
+            if not model.objects.filter(**{model.USERNAME_FIELD: typed}).exists():
+                match = model.objects.filter(email__iexact=typed).order_by("pk").first()
+                if match:
+                    self.cleaned_data["username"] = match.get_username()
+        return super().clean()
 
 
 class PanelPasswordChangeForm(PanelFormMixin, PasswordChangeForm):

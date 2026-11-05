@@ -169,6 +169,11 @@ class JoinTests(TestCase):
         response = self.client.post("/panel/logout/")
         self.assertRedirects(response, "/join", fetch_redirect_response=False)
 
+    def test_sign_in_with_email(self):
+        User.objects.create_user("boss", "Boss@Example.com", "pw", is_staff=True)
+        response = self.client.post("/join", {"action": "in", "in-username": "boss@example.com", "in-password": "pw"})
+        self.assertRedirects(response, "/panel/", fetch_redirect_response=False)
+
     def test_sign_up_rate_limit(self):
         for i in range(5):
             self.signup(f"u{i}@example.com")

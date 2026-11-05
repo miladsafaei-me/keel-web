@@ -15,7 +15,8 @@ def resolve_nav_active(sections, current_path, force_open_labels=frozenset()):
     """Annotate ``sections`` in place with ``active`` / ``open`` / ``any_active``.
 
     Longest matching ``match_prefix`` wins, so a broad parent prefix does not
-    stay active when the user is actually on a more specific child route.
+    stay active when the user is actually on a more specific child route. An item
+    with ``"exact": True`` (a dashboard at the panel's root) matches its own path only.
     Returns the same ``sections`` list for convenience.
     """
     candidates: list[str] = []
@@ -26,7 +27,14 @@ def resolve_nav_active(sections, current_path, force_open_labels=frozenset()):
             else:
                 candidates.append(item["match_prefix"])
 
-    matching = [p for p in candidates if current_path.startswith(p)]
+    exact = set()
+    for section in sections:
+        for item in section["items"]:
+            for leaf in (item["children"] if item.get("accordion") else [item]):
+                if leaf.get("exact"):
+                    exact.add(leaf["match_prefix"])
+
+    matching = [p for p in candidates if (current_path == p if p in exact else current_path.startswith(p))]
     active_prefix = max(matching, key=len) if matching else ""
 
     for section in sections:

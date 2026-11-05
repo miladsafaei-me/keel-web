@@ -21,6 +21,15 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     the field-agnostic 3-tab content editor partials, permission mixins,
     `resolve_nav_active`, the Gemini image-gen HTTP/decode/retry core, the WebP
     image-upload helper, and the admin CSS/JS.
+  - `keel_web.panel` (label `keel_web_panel`): the panel's own pages for a host whose admin is the
+    staff panel and not Django's: sign-in and sign-out, the dashboard (cards and lists from
+    `KEEL_WEB["admin_shell"]["dashboard_cards"]` / `["dashboard_panels"]` hooks), your password, and the
+    users (superusers only: list, add, edit, password, delete; nobody can lock themself out). Mounted with
+    `include("keel_web.panel.urls")`; `LOGIN_URL = "keel_web_panel:login"`. Sidebar pieces in `panel/nav.py`.
+  - `keel_web.newsletter` (label `keel_web_newsletter`): the `NewsletterSubscriber` list (unsubscribing
+    keeps the row), its panel page (search, add, unsubscribe, delete, CSV export) at
+    `include("keel_web.newsletter.urls")`, and the public `subscribe` / `unsubscribe` views, which the
+    host mounts itself (no public address appears until it does).
   - `keel_web.admin_theme`: the stock Django admin in the staff-panel look: overrides of
     every `admin/` and `registration/` template, `admin-theme.css` (tokens only, light and
     dark), `admin-theme.js`, the boolean icons; configured by `KEEL_WEB["admin_theme"]`.
@@ -88,8 +97,15 @@ The full table is in `README.md`. The seams, by area:
 - **Auth:** `user_db_table` (adoption), `signup_lead_hook`, `content_editor_group`,
   `client_path_prefix`, `email_logo_static`, plus standard `BRAND_NAME` /
   `SITE_BASE_URL` / `DEFAULT_FROM_EMAIL`.
-- **Staff panel:** `permission_denied_redirect`; the host builds its own nav data
-  and calls `resolve_nav_active`; the content-editor partial reads endpoint URLs
+- **Staff panel:** `permission_denied_redirect`; `KEEL_WEB["admin_shell"]` (brand, logo, favicon, the
+  built `stylesheet` plus host `stylesheets`, the `home_url` / `logout_url` / `profile_url` / `client_url`
+  / `site_url` the shell links to, None hiding a link, the `nav` callable, the dashboard hooks, the sign-in
+  copy). Panel pages from any package render through `admin_shell.context` (`PanelMixin`,
+  `render_panel`, `staff_required`) and style forms with `admin_shell.forms.PanelFormMixin`; shared
+  partials sit in `keel_web_admin/panel/` (field, form errors, formset, stat card, badge, pager). A
+  nav item with `"exact": True` matches its own path only. A host without the client panel builds its
+  own Tailwind bundle over these templates (see miladsafaei-site `backend/tools/build-panel-css.sh`).
+  Otherwise the host builds its own nav data and calls `resolve_nav_active`; the content-editor partial reads endpoint URLs
   from context (`editor_convert_url`, `editor_upload_url`, `editor_ai_inline_url`,
   `editor_featured_url`, `editor_post_id`, `editor_is_pipeline`).
 - **Client panel:** `client_nav`, `client_base_context_hook`; templates expose the

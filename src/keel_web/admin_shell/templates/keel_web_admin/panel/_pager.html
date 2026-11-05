@@ -1,0 +1,10 @@
+{% comment %}Previous and next links under a list. Input: page_obj, and query (the filters, without page).{% endcomment %}
+{% if page_obj.has_other_pages %}
+<nav class="panel-pager flex items-center justify-between gap-3 border-t border-gray-200 px-5 py-4 text-sm dark:border-gray-800" aria-label="Pages">
+  <span class="text-gray-500 dark:text-gray-400">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} in all</span>
+  <span class="flex gap-2">
+    {% if page_obj.has_previous %}<a class="rounded-full border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5" href="?{{ query }}{% if query %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}<a class="rounded-full border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5" href="?{{ query }}{% if query %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </span>
+</nav>
+{% endif %}

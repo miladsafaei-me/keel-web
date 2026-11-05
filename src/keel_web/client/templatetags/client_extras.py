@@ -52,7 +52,7 @@ def persona_avatar(user, size_classes: str = "h-10 w-10", *, extra_classes: str 
         return mark_safe("".join(parts))
 
     # 3) Initials fallback.
-    initials = getattr(user, "initials", "?")
+    initials = getattr(user, "initials", None) or (user.get_username()[:1].upper() if hasattr(user, "get_username") else "?")
     return mark_safe(
         f'<span class="inline-flex items-center justify-center {size_classes} '
         f'rounded-full bg-gray-100 text-gray-700 font-semibold dark:bg-gray-800 '

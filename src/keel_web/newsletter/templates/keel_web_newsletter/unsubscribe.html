@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Newsletter</title></head>
+<body>
+  <main id="newsletter-unsubscribe">
+    {% if done %}
+    <h1>You are unsubscribed</h1>
+    <p>{{ row.email }} will get no more newsletters.</p>
+    {% elif row %}
+    <h1>Unsubscribe</h1>
+    <form method="post">{% csrf_token %}<p>Stop sending the newsletter to {{ row.email }}?</p><button type="submit">Unsubscribe</button></form>
+    {% else %}
+    <h1>This link is not valid</h1>
+    <p>It may be old. Nothing was changed.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

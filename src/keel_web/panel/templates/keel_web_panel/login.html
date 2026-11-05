@@ -1,0 +1,42 @@
+{% load static keel_icons keel_panel %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{{ login_title }}{% if brand_name %} · {{ brand_name }}{% endif %}</title>
+  {% panel_favicon %}
+  {% panel_stylesheets %}
+</head>
+<body x-data="{ darkMode: false }"
+      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode')) === true"
+      :class="{'dark bg-gray-900': darkMode === true}"
+      class="bg-gray-50">
+  <main id="panel-login" class="flex min-h-screen items-center justify-center px-4 py-10">
+    <section class="panel-login-card w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-white/[0.03]" aria-labelledby="panel-login-title">
+      <header class="panel-login-head mb-6 flex items-center gap-3">
+        {% if logo %}<img src="{% static logo %}" alt="" width="48" height="48" class="h-12 w-12 object-cover{% if logo_round %} rounded-full{% endif %}">{% endif %}
+        <div>
+          {% if brand_name %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ brand_name }}</p>{% endif %}
+          <h1 id="panel-login-title" class="text-xl font-semibold text-gray-800 dark:text-white/90">{{ login_title }}</h1>
+        </div>
+      </header>
+      {% if login_text %}<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">{{ login_text }}</p>{% endif %}
+      {% if user.is_authenticated and not user.is_staff %}
+      <p class="mb-4 rounded-lg bg-warning-50 px-4 py-3 text-sm text-warning-700 dark:bg-warning-500/15 dark:text-orange-400">This account cannot open the panel. Sign in with a staff account.</p>
+      {% endif %}
+      <form id="panel-login-form" method="post" class="space-y-5">
+        {% csrf_token %}
+        {% include "keel_web_admin/panel/_form_errors.html" %}
+        {% include "keel_web_admin/panel/_field.html" with field=form.username %}
+        {% include "keel_web_admin/panel/_field.html" with field=form.password %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600">
+          {% icon "lock" class="h-4 w-4" %} Sign in
+        </button>
+      </form>
+    </section>
+  </main>
+  <script src="{% static 'keel_web_client/vendor/alpine/alpine.min.js' %}" defer></script>
+</body>
+</html>

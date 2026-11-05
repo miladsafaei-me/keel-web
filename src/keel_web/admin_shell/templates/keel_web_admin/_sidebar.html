@@ -1,4 +1,4 @@
-{% load static keel_icons %}
+{% load static keel_icons keel_panel %}
 <div class="dark contents">
 <aside
   :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
@@ -6,11 +6,17 @@
 
   <div :class="sidebarToggle ? 'justify-center' : 'justify-start'"
        class="flex shrink-0 items-center gap-2 pt-8 pb-7">
-    <a href="{% url 'admin_shell:dashboard' %}" aria-label="Home" class="inline-flex shrink-0 items-center gap-2">
+    {% panel_url "home_url" as panel_home %}{% panel_setting "logo" as panel_logo_path %}{% panel_setting "logo_round" as panel_logo_round %}
+    <a href="{{ panel_home|default:'/' }}" aria-label="Home" class="inline-flex shrink-0 items-center gap-2">
       <span class="logo inline-flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap" :class="sidebarToggle ? 'lg:hidden' : ''">
         {% block panel_logo %}
+        {% if panel_logo_path %}
+        <img src="{% static panel_logo_path %}" alt="" class="panel-logo h-10 w-10 shrink-0 object-cover{% if panel_logo_round %} rounded-full{% endif %}" width="40" height="40">
+        <span class="panel-brand text-base font-semibold text-gray-800 dark:text-white/90">{{ brand_name }}</span>
+        {% else %}
         <img src="{% static 'keel_web_client/img/logo.svg' %}" alt="{{ brand_name|default:'Home' }}"
              class="h-18 w-auto shrink-0" width="180" height="62">
+        {% endif %}
         {% endblock %}
       </span>
       <span class="logo-icon hidden shrink-0 text-brand-500"

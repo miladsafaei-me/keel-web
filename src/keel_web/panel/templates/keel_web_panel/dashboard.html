@@ -1,0 +1,31 @@
+{% extends "keel_web_admin/base_admin.html" %}
+{% load keel_icons %}
+
+{% block content %}
+<section id="dashboard-figures" aria-label="Figures" class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+  {% for card in cards %}{% include "keel_web_admin/panel/_stat_card.html" %}{% endfor %}
+</section>
+
+{% if panels %}
+<section id="dashboard-lists" class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+  {% for panel in panels %}
+  <article class="panel-list rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <header class="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-800">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ panel.title }}</h3>
+      {% if panel.url %}<a href="{{ panel.url }}" class="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400">See all</a>{% endif %}
+    </header>
+    <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+      {% for row in panel.rows %}
+      <li class="flex items-center justify-between gap-3 px-5 py-3">
+        <a href="{{ row.url }}" class="min-w-0 truncate text-sm font-medium text-gray-800 hover:text-brand-500 dark:text-white/90">{{ row.label }}</a>
+        <span class="shrink-0 text-xs text-gray-500 dark:text-gray-400">{{ row.meta }}</span>
+      </li>
+      {% empty %}
+      <li class="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400">{{ panel.empty|default:"Nothing yet." }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

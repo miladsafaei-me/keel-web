@@ -1,0 +1,71 @@
+{% extends "keel_web_admin/base_admin.html" %}
+{% load keel_icons %}
+
+{% block page_actions %}
+<a href="{% url 'keel_web_newsletter:export' %}{% if query %}?{{ query }}{% endif %}" class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/5">{% icon "download" class="h-4 w-4" %} Export CSV</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+  <section id="subscriber-list" class="min-w-0 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <form id="subscriber-filters" method="get" class="flex flex-wrap items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-800 md:p-5">
+      <label class="relative w-full max-w-sm">
+        <span class="sr-only">Search</span>
+        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">{% icon "search" class="h-4 w-4" %}</span>
+        <input type="search" name="q" value="{{ q }}" placeholder="Email, name or source" class="panel-input h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-9 pr-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:text-white/90">
+      </label>
+      <label class="sr-only" for="subscriber-status">Status</label>
+      <select id="subscriber-status" name="status" class="panel-input h-11 w-full min-w-0 rounded-lg sm:w-auto sm:max-w-64 border border-gray-300 bg-transparent px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+        <option value="">All ({{ counts.active|add:counts.unsubscribed }})</option>
+        <option value="active"{% if status == "active" %} selected{% endif %}>Subscribed ({{ counts.active }})</option>
+        <option value="unsubscribed"{% if status == "unsubscribed" %} selected{% endif %}>Unsubscribed ({{ counts.unsubscribed }})</option>
+      </select>
+      <button type="submit" class="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">Filter</button>
+    </form>
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="border-b border-gray-200 dark:border-gray-800">
+          <tr class="text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th class="px-5 py-3 md:px-6">Email</th>
+            <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3">Source</th>
+            <th class="px-5 py-3">Since</th>
+            <th class="px-5 py-3 text-right md:pr-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          {% for row in page_obj %}
+          <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+            <td class="px-5 py-4 md:px-6"><span class="text-sm font-medium text-gray-800 dark:text-white/90">{{ row.email }}</span>{% if row.name %}<span class="block text-xs text-gray-500 dark:text-gray-400">{{ row.name }}</span>{% endif %}</td>
+            <td class="px-5 py-4">{% if row.status == "active" %}{% include "keel_web_admin/panel/_badge.html" with text="Subscribed" tone="success" %}{% else %}{% include "keel_web_admin/panel/_badge.html" with text="Unsubscribed" tone="gray" %}{% endif %}</td>
+            <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">{{ row.source|default:"-" }}{% if row.language %} · {{ row.language }}{% endif %}</td>
+            <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">{{ row.created_at|date:"Y-m-d" }}</td>
+            <td class="px-5 py-4 md:pr-6">
+              <div class="flex items-center justify-end gap-1">
+                <form method="post" action="{% url 'keel_web_newsletter:toggle' row.pk %}">{% csrf_token %}
+                  <button type="submit" title="{% if row.status == 'active' %}Unsubscribe{% else %}Subscribe again{% endif %}" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5">{% if row.status == "active" %}{% icon "user-minus" class="h-4 w-4" %}{% else %}{% icon "user-plus" class="h-4 w-4" %}{% endif %}</button>
+                </form>
+                <form method="post" action="{% url 'keel_web_newsletter:delete' row.pk %}" @submit="if (!confirm('Delete this address from the list for good?')) $event.preventDefault()">{% csrf_token %}
+                  <button type="submit" title="Delete" class="flex h-8 w-8 items-center justify-center rounded-lg text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10">{% icon "trash" class="h-4 w-4" %}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="px-5 py-12 text-center text-sm text-gray-500 dark:text-gray-400">No subscribers yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "keel_web_admin/panel/_pager.html" %}
+  </section>
+
+  <form id="subscriber-add" method="post" class="panel-card space-y-4 self-start rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:sticky lg:top-24">
+    {% csrf_token %}
+    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Add an address</h3>
+    {% include "keel_web_admin/panel/_form_errors.html" %}
+    {% for field in form %}{% include "keel_web_admin/panel/_field.html" %}{% endfor %}
+    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600">{% icon "plus" class="h-4 w-4" %} Add</button>
+  </form>
+</div>
+{% endblock %}

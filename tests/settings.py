@@ -22,6 +22,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "keel_web.csrf_defer",
     "keel_web.frontend",
+    "keel_web.admin_shell",
+    "keel_web.client",
+    "keel_web.panel",
+    "keel_web.newsletter",
     "tests.hostapp",
 ]
 

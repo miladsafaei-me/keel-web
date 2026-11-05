@@ -1,0 +1,41 @@
+{% extends "keel_web_admin/base_admin.html" %}
+{% load keel_icons %}
+
+{% block page_actions %}
+<a href="{% url 'keel_web_panel:user_list' %}" class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/5">{% icon "arrow-left" class="h-4 w-4" %} Users</a>
+<button type="submit" form="user-form" class="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600">{% icon "check" class="h-4 w-4" %} Save</button>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+  <form id="user-form" method="post" class="panel-card rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+    {% csrf_token %}
+    {% include "keel_web_admin/panel/_form_errors.html" %}
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      {% for field in form %}
+      <div class="{% if field.widget_type == 'checkboxselectmultiple' %}md:col-span-2{% endif %}">{% include "keel_web_admin/panel/_field.html" %}</div>
+      {% endfor %}
+    </div>
+  </form>
+  {% if subject %}
+  <aside id="user-side" class="space-y-6">
+    <section class="panel-card rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+      <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">Account</h3>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between gap-3"><dt class="text-gray-500 dark:text-gray-400">Joined</dt><dd class="text-gray-800 dark:text-white/90">{{ subject.date_joined|date:"Y-m-d" }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-gray-500 dark:text-gray-400">Last sign-in</dt><dd class="text-gray-800 dark:text-white/90">{{ subject.last_login|date:"Y-m-d H:i"|default:"Never" }}</dd></div>
+      </dl>
+      <a href="{% url 'keel_web_panel:user_password' subject.pk %}" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">{% icon "key" class="h-4 w-4" %} Set a new password</a>
+    </section>
+    {% if subject.pk != request.user.pk %}
+    <form method="post" action="{% url 'keel_web_panel:user_delete' subject.pk %}" class="panel-danger rounded-2xl border border-error-500/30 p-5" @submit="if (!confirm('Delete this user for good?')) $event.preventDefault()">
+      {% csrf_token %}
+      <h3 class="mb-2 text-base font-semibold text-gray-800 dark:text-white/90">Delete</h3>
+      <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">To block sign-in but keep the account, turn off Active instead.</p>
+      <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-error-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-error-600">{% icon "trash" class="h-4 w-4" %} Delete user</button>
+    </form>
+    {% endif %}
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

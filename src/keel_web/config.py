@@ -261,6 +261,24 @@ _DEFAULTS = {
         # "auto" follows the system; "light" or "dark" fixes the first visit.
         "default_theme": "auto",
     },
+    "admin_shell": {
+        "brand_name": "",
+        "logo": None,
+        "logo_round": False,
+        "favicon": None,
+        "stylesheet": "keel_web_client/css/client.css",
+        "stylesheets": (),
+        "home_url": "admin_shell:dashboard",
+        "logout_url": "account_logout",
+        "profile_url": "client:profile",
+        "client_url": "client:dashboard",
+        "site_url": "/",
+        "nav": None,
+        "dashboard_cards": (),
+        "dashboard_panels": (),
+        "login_title": "Sign in",
+        "login_text": "Enter your username and password to reach the panel.",
+    },
 }
 
 
@@ -321,3 +339,9 @@ def call_hook(dotted, *args, default=None, **kwargs):
         return import_string(dotted)(*args, **kwargs)
     except Exception:
         return default
+
+
+def admin_shell_setting(key):
+    """Return ``KEEL_WEB["admin_shell"][key]`` or its package default."""
+    configured = getattr(settings, "KEEL_WEB", {}).get("admin_shell", {}) or {}
+    return configured.get(key, _DEFAULTS["admin_shell"][key])

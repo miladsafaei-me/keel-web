@@ -1,4 +1,4 @@
-{% load static keel_icons %}<!doctype html>
+{% load static keel_icons keel_panel %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -8,9 +8,9 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="{% block meta_description %}Staff panel.{% endblock %}">
 
-  {% block favicon %}{% endblock %}
+  {% block favicon %}{% panel_favicon %}{% endblock %}
 
-  <link rel="stylesheet" href="{% static 'keel_web_client/css/client.css' %}">
+  {% panel_stylesheets %}
   {% block head_extra %}{% endblock %}
   {% block extra_head %}{% endblock %}
 </head>

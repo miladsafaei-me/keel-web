@@ -40,11 +40,10 @@
           <button type="submit" class="shrink-0 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">{% if subscribed %}Stop{% else %}Subscribe{% endif %}</button>
         </form>
         {% endif %}
-        {% if logout_url %}
-        <form method="post" action="{{ logout_url }}">{% csrf_token %}
+        {% comment %}Signs out here, on this page's own address, so a CSRF cookie scoped to it is enough.{% endcomment %}
+        <form id="join-sign-out" method="post">{% csrf_token %}<input type="hidden" name="action" value="out">
           <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">{% icon "logout" class="h-4 w-4" %} Sign out</button>
         </form>
-        {% endif %}
       </div>
       {% else %}
       {% if join_text %}<p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ join_text }}</p>{% endif %}

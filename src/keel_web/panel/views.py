@@ -9,7 +9,7 @@ from __future__ import annotations
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login, update_session_auth_hash
+from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.core.cache import cache
 from django.core.paginator import Paginator
@@ -210,6 +210,9 @@ def join(request):
                     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
                     messages.success(request, "Your account is ready.")
                     return redirect(_next_url(request, user))
+        elif action == "out":
+            logout(request)
+            return redirect(request.path)
         elif action == "newsletter" and request.user.is_authenticated and _newsletter_on():
             from keel_web.newsletter.models import NewsletterSubscriber, subscribe
 

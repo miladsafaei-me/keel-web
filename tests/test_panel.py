@@ -145,6 +145,8 @@ class JoinTests(TestCase):
         self.client.post("/join", {"action": "newsletter"})
         self.assertEqual(NewsletterSubscriber.objects.get(email="m@example.com").status, "unsubscribed")
         self.assertEqual(self.client.get("/panel/").status_code, 302)
+        self.client.post("/join", {"action": "out"})
+        self.assertNotContains(self.client.get("/join"), "Your account")
 
     def test_trap_and_duplicate_email(self):
         self.signup(**{"up-website": "spam"})

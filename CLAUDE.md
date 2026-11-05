@@ -26,6 +26,9 @@ Remaining and follow-up work for this project is tracked in [TODO.md](TODO.md), 
     `KEEL_WEB["admin_shell"]["dashboard_cards"]` / `["dashboard_panels"]` hooks), your password, and the
     users (superusers only: list, add, edit, password, delete; nobody can lock themself out). Mounted with
     `include("keel_web.panel.urls")`; `LOGIN_URL = "keel_web_panel:login"`. Sidebar pieces in `panel/nav.py`.
+    `panel.views.join` is one sign-in and sign-up page the host mounts at its own address (the sites use
+    `/join`, then `LOGIN_URL = "join"`): staff go on to the panel, a signed-in member sees their account
+    and newsletter there; sign-up opens only with `admin_shell["signup"]` (rate-limited, a bot trap).
   - `keel_web.newsletter` (label `keel_web_newsletter`): the `NewsletterSubscriber` list (unsubscribing
     keeps the row), its panel page (search, add, unsubscribe, delete, CSV export) at
     `include("keel_web.newsletter.urls")`, and the public `subscribe` / `unsubscribe` views, which the

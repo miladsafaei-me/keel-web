@@ -1,0 +1,82 @@
+{% load static keel_icons keel_panel %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{{ join_title }}{% if brand_name %} · {{ brand_name }}{% endif %}</title>
+  {% panel_favicon %}
+  {% panel_stylesheets %}
+</head>
+<body x-data="{ darkMode: false, tab: '{{ tab }}' }"
+      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode')) === true"
+      :class="{'dark bg-gray-900': darkMode === true}"
+      class="bg-gray-50">
+  <main id="join" class="flex min-h-screen items-center justify-center px-4 py-10">
+    <section class="join-card w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 dark:border-gray-800 dark:bg-white/[0.03]" aria-labelledby="join-title">
+      <header class="join-head mb-6 flex items-center gap-3">
+        {% if logo %}<a href="{{ site_url|default:'/' }}" aria-label="{{ brand_name|default:'Home' }}"><img src="{% static logo %}" alt="" width="48" height="48" class="h-12 w-12 object-cover{% if logo_round %} rounded-full{% endif %}"></a>{% endif %}
+        <div>
+          {% if brand_name %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ brand_name }}</p>{% endif %}
+          <h1 id="join-title" class="text-xl font-semibold text-gray-800 dark:text-white/90">{% if user.is_authenticated %}Your account{% else %}{{ join_title }}{% endif %}</h1>
+        </div>
+      </header>
+
+      {% for m in messages %}<p class="join-message mb-4 rounded-lg bg-success-50 px-4 py-3 text-sm text-success-700 dark:bg-success-500/15 dark:text-success-500">{{ m }}</p>{% endfor %}
+
+      {% if user.is_authenticated %}
+      <div id="join-account" class="space-y-5">
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between gap-3"><dt class="text-gray-500 dark:text-gray-400">Name</dt><dd class="text-gray-800 dark:text-white/90">{{ user.get_full_name|default:user.get_username }}</dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-gray-500 dark:text-gray-400">Email</dt><dd class="min-w-0 break-all text-gray-800 dark:text-white/90">{{ user.email|default:"-" }}</dd></div>
+        </dl>
+        {% if user.is_staff and panel_home %}
+        <a href="{{ panel_home }}" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600">{% icon "dashboard" class="h-4 w-4" %} Open the panel</a>
+        {% endif %}
+        {% if newsletter_on and user.email %}
+        <form method="post" class="flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          {% csrf_token %}<input type="hidden" name="action" value="newsletter">
+          <span class="text-sm text-gray-700 dark:text-gray-300">{% if subscribed %}You get the newsletter.{% else %}You do not get the newsletter.{% endif %}</span>
+          <button type="submit" class="shrink-0 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">{% if subscribed %}Stop{% else %}Subscribe{% endif %}</button>
+        </form>
+        {% endif %}
+        {% if logout_url %}
+        <form method="post" action="{{ logout_url }}">{% csrf_token %}
+          <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">{% icon "logout" class="h-4 w-4" %} Sign out</button>
+        </form>
+        {% endif %}
+      </div>
+      {% else %}
+      {% if join_text %}<p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ join_text }}</p>{% endif %}
+      {% if signup_form %}
+      <nav id="join-tabs" class="mb-6 grid grid-cols-2 gap-1 rounded-full bg-gray-100 p-1 dark:bg-white/5" aria-label="Sign in or create an account">
+        <button type="button" @click="tab = 'in'" :class="tab === 'in' ? 'bg-white text-gray-800 shadow-theme-xs dark:bg-gray-800 dark:text-white/90' : 'text-gray-500 dark:text-gray-400'" class="rounded-full px-4 py-2 text-sm font-medium">Sign in</button>
+        <button type="button" @click="tab = 'up'" :class="tab === 'up' ? 'bg-white text-gray-800 shadow-theme-xs dark:bg-gray-800 dark:text-white/90' : 'text-gray-500 dark:text-gray-400'" class="rounded-full px-4 py-2 text-sm font-medium">Create an account</button>
+      </nav>
+      {% endif %}
+
+      <form id="join-sign-in" method="post" class="space-y-5" x-show="tab === 'in'"{% if tab != "in" %} x-cloak{% endif %}>
+        {% csrf_token %}<input type="hidden" name="action" value="in"><input type="hidden" name="next" value="{{ next }}">
+        {% include "keel_web_admin/panel/_form_errors.html" with form=login_form %}
+        {% include "keel_web_admin/panel/_field.html" with field=login_form.username %}
+        {% include "keel_web_admin/panel/_field.html" with field=login_form.password %}
+        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600">{% icon "lock" class="h-4 w-4" %} Sign in</button>
+      </form>
+
+      {% if signup_form %}
+      <form id="join-sign-up" method="post" class="space-y-5" x-show="tab === 'up'"{% if tab != "up" %} x-cloak{% endif %}>
+        {% csrf_token %}<input type="hidden" name="action" value="up"><input type="hidden" name="next" value="{{ next }}">
+        {% include "keel_web_admin/panel/_form_errors.html" with form=signup_form %}
+        {% for field in signup_form %}
+        {% if field.name == "website" %}<div class="join-trap sr-only" aria-hidden="true"><label for="{{ field.id_for_label }}">Website</label>{{ field }}</div>
+        {% else %}{% include "keel_web_admin/panel/_field.html" %}{% endif %}
+        {% endfor %}
+        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-3 text-sm font-medium text-white hover:bg-brand-600">{% icon "user-plus" class="h-4 w-4" %} Create the account</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </section>
+  </main>
+  <script src="{% static 'keel_web_client/vendor/alpine/alpine.min.js' %}" defer></script>
+</body>
+</html>

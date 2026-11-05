@@ -278,6 +278,10 @@ _DEFAULTS = {
         "dashboard_panels": (),
         "login_title": "Sign in",
         "login_text": "Enter your username and password to reach the panel.",
+        "signup": False,
+        "join_title": "Join",
+        "join_text": "Sign in, or create an account.",
+        "signup_per_hour": 5,
     },
 }
 

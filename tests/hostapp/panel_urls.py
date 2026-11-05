@@ -1,6 +1,9 @@
 from django.urls import include, path
 
+from keel_web.panel.views import join
+
 urlpatterns = [
+    path("join", join, name="join"),
     path("panel/", include("keel_web.panel.urls")),
     path("panel/newsletter/", include("keel_web.newsletter.urls")),
 ]

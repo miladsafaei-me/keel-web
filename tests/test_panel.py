@@ -104,3 +104,68 @@ class NewsletterTests(TestCase):
         self.assertIn("b@example.com", csv)
         self.client.post(f"/panel/newsletter/{row.pk}/delete/")
         self.assertFalse(NewsletterSubscriber.objects.exists())
+
+
+JOIN = {"admin_shell": {**PANEL["admin_shell"], "signup": True, "logout_url": "keel_web_panel:logout"}}
+
+
+@override_settings(ROOT_URLCONF="tests.hostapp.panel_urls", LOGIN_URL="join", KEEL_WEB=JOIN)
+class JoinTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def signup(self, email="m@example.com", **extra):
+        return self.client.post("/join", {"action": "up", "up-name": "Mina Rad", "up-email": email,
+                                          "up-password1": "a-long-Pass-123", "up-password2": "a-long-Pass-123",
+                                          "up-newsletter": "on", **extra})
+
+    def test_page_has_both_forms_and_noindex(self):
+        response = self.client.get("/join")
+        self.assertContains(response, 'id="join-sign-in"')
+        self.assertContains(response, 'id="join-sign-up"')
+        self.assertEqual(response["X-Robots-Tag"], "noindex")
+
+    @override_settings(KEEL_WEB=PANEL)
+    def test_sign_up_is_off_by_default(self):
+        self.assertNotContains(self.client.get("/join"), 'id="join-sign-up"')
+        self.signup()
+        self.assertFalse(User.objects.filter(email="m@example.com").exists())
+
+    def test_sign_up_makes_a_member_on_the_newsletter(self):
+        response = self.signup()
+        self.assertRedirects(response, "/join", fetch_redirect_response=False)
+        user = User.objects.get(email="m@example.com")
+        self.assertFalse(user.is_staff)
+        self.assertEqual(user.first_name, "Mina")
+        self.assertTrue(NewsletterSubscriber.objects.filter(email="m@example.com", status="active").exists())
+        page = self.client.get("/join")
+        self.assertContains(page, "Your account")
+        self.client.post("/join", {"action": "newsletter"})
+        self.assertEqual(NewsletterSubscriber.objects.get(email="m@example.com").status, "unsubscribed")
+        self.assertEqual(self.client.get("/panel/").status_code, 302)
+
+    def test_trap_and_duplicate_email(self):
+        self.signup(**{"up-website": "spam"})
+        self.assertFalse(User.objects.exists())
+        self.signup()
+        self.client.logout()
+        self.assertContains(self.signup(), "already has an account")
+
+    def test_staff_sign_in_goes_to_the_panel_and_next_is_kept(self):
+        User.objects.create_user("boss", "boss@example.com", "pw", is_staff=True)
+        response = self.client.post("/join", {"action": "in", "in-username": "boss", "in-password": "pw"})
+        self.assertRedirects(response, "/panel/", fetch_redirect_response=False)
+        self.client.logout()
+        response = self.client.post("/join", {"action": "in", "in-username": "boss", "in-password": "pw",
+                                              "next": "/panel/users/"})
+        self.assertRedirects(response, "/panel/users/", fetch_redirect_response=False)
+        response = self.client.post("/panel/logout/")
+        self.assertRedirects(response, "/join", fetch_redirect_response=False)
+
+    def test_sign_up_rate_limit(self):
+        for i in range(5):
+            self.signup(f"u{i}@example.com")
+            self.client.logout()
+        self.assertContains(self.signup("late@example.com"), "Too many new accounts")

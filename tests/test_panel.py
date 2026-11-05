@@ -102,6 +102,9 @@ class NewsletterTests(TestCase):
         self.assertEqual(row.status, "unsubscribed")
         csv = self.client.get("/panel/newsletter/export.csv?status=unsubscribed").content.decode()
         self.assertIn("b@example.com", csv)
+        self.client.post("/panel/newsletter/", {"email": "b@example.com"})
+        row.refresh_from_db()
+        self.assertEqual(row.status, "active")
         self.client.post(f"/panel/newsletter/{row.pk}/delete/")
         self.assertFalse(NewsletterSubscriber.objects.exists())
 

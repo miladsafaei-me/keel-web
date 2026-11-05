@@ -27,10 +27,13 @@ from keel_web.admin_shell.forms import PanelFormMixin
 from .models import NewsletterSubscriber, subscribe as add_subscriber
 
 
-class SubscriberForm(PanelFormMixin, forms.ModelForm):
-    class Meta:
-        model = NewsletterSubscriber
-        fields = ("email", "name", "language", "source")
+class SubscriberForm(PanelFormMixin, forms.Form):
+    """Adding an address already on the list subscribes it again instead of failing."""
+
+    email = forms.EmailField()
+    name = forms.CharField(max_length=120, required=False)
+    language = forms.CharField(max_length=12, required=False, help_text="The language they signed up in.")
+    source = forms.CharField(max_length=120, required=False, help_text="Where they signed up, such as a page or a form.")
 
 
 def _filtered(request):

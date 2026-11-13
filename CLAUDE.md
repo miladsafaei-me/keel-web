@@ -116,8 +116,8 @@ The full table is in `README.md`. The seams, by area:
   `panel_logo` / `panel_banner` / `brand_suffix` / `favicon` / `head_extra` blocks
   and the `admin_home_url` context var.
 - **Image gen:** `image_gen.api_key_hook` / `hero_url_hook` / `inline_url_hook` /
-  `aspect_ratio_hook` / `hero_system_instruction_hook` / `inline_system_instruction_hook`
-- each with an env-style default so it works with zero hooks.
+  `aspect_ratio_hook` / `hero_system_instruction_hook` / `inline_system_instruction_hook` -
+  each with an env-style default so it works with zero hooks.
 - **Storage:** `static_skip_hash_prefixes`, `static_minify_skip_substrings`.
 - **Anonymous page cache:** `anonymous_page_cache.enabled` /
   `.exempt_prefixes` / `.browser_max_age` / `.edge_max_age` / `.vary_drop` /
